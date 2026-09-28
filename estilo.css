@@ -1,0 +1,2804 @@
+/* =========================================================
+   KANA SENSEI — folha de estilo
+   Direção: riso / anime anos 90 moderno.
+   Azul de impressão sobre papel off-white, contorno preto,
+   sombra dura, meio-tom e grão.
+   ========================================================= */
+
+/* ========== AS CORES E AS MEDIDAS ========== */
+
+:root {
+    /* papel */
+    --papel: #EFEDE4;
+    --papel-2: #FBFAF5;
+    --papel-3: #E4E1D6;
+
+    /* tintas */
+    --tinta: #14161C;
+    --azul: #2A3FE0;
+    --azul-claro: #8C9CF4;
+    --azul-fundo: #DFE3FF;
+    --azul-escuro: #131C6B;
+    --vermelho: #E03A20;
+    --vermelho-fundo: #FBDCD5;
+
+    /* apoio */
+    --cinza: #74776B;
+    --cinza-claro: #A7A99E;
+    --linha: var(--tinta);
+
+    /* a chapa azul da pergunta */
+    --chapa: #2A3FE0;
+    --chapa-texto: #F3F1E8;
+    --chapa-sub: #93A1F6;
+    --chapa-erro: #DE3A20;
+    --chapa-erro-sub: #F9BFB1;
+
+    /* traços e sombras */
+    --sombra-cor: #14161C;
+    --borda: 2.5px;
+    --raio: 4px;
+    --sombra: 5px 5px 0 var(--sombra-cor);
+    --sombra-azul: 5px 5px 0 var(--azul);
+    --sombra-funda: 9px 9px 0 var(--sombra-cor);
+
+    /* o cabeçalho é escuro nos dois temas */
+    --topo-fundo: #14161C;
+    --topo-texto: #EFEDE4;
+
+    /* tipos */
+    --display: "Anton", "Archivo", Impact, system-ui, sans-serif;
+    --texto: "Archivo", system-ui, -apple-system, sans-serif;
+    --kana: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+
+    /* o quadro de desenhar (canvas: o script lê estas cores) */
+    --traco-grade: #CFCCC0;
+    --traco-ajuda: #C2C8E8;
+
+    /* ícones */
+    --icone-som: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M2.6 9.2h4L11.4 4.6v14.8L6.6 14.8h-4z'/%3E%3Cpath d='M15.2 8.9a4.4 4.4 0 0 1 0 6.2' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round'/%3E%3Cpath d='M18.3 5.8a8.8 8.8 0 0 1 0 12.4' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round'/%3E%3C/svg%3E");
+
+    --icone-certo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3.4 12.6l5.6 5.6L20.6 6.6' fill='none' stroke='%23000' stroke-width='4.2' stroke-linecap='square'/%3E%3C/svg%3E");
+    --icone-errado: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 5l14 14M19 5L5 19' fill='none' stroke='%23000' stroke-width='4.2' stroke-linecap='square'/%3E%3C/svg%3E");
+
+    /* texturas */
+    --meiotom: radial-gradient(var(--azul) 1.1px, transparent 1.3px);
+    --meiotom-tam: 7px 7px;
+}
+
+html[data-visual="escuro"] {
+    --papel: #0E1017;
+    --papel-2: #181B26;
+    --papel-3: #232735;
+
+    --tinta: #F1EFE6;
+    --azul: #6A82FF;
+    --azul-claro: #3A4894;
+    --azul-fundo: #1E2750;
+    --azul-escuro: #B9C4FF;
+    --vermelho: #FF6B4E;
+    --vermelho-fundo: #43190F;
+
+    --cinza: #9A9C93;
+    --cinza-claro: #63665F;
+
+    --chapa: #2233AE;
+    --chapa-texto: #EFEDE4;
+    --chapa-sub: #9BA8F8;
+    --chapa-erro: #B5301A;
+    --chapa-erro-sub: #F3AD9B;
+
+    --sombra-cor: #000;
+    --topo-fundo: #05060A;
+    --topo-texto: #EFEDE4;
+
+    --traco-grade: #3A3F52;
+    --traco-ajuda: #414C7E;
+}
+
+/* ========== BASE ========== */
+
+* {
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+html {
+    background: var(--papel);
+}
+
+body {
+    font-family: var(--texto);
+    font-size: 16px;
+    background: var(--papel);
+    color: var(--tinta);
+    margin: 0;
+    padding: 0 0 calc(96px + env(safe-area-inset-bottom));
+    overflow-x: hidden;
+}
+
+/* o grão: fica por cima de tudo, não pega clique */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: .4;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+html[data-visual="escuro"] body::after {
+    mix-blend-mode: screen;
+    opacity: .1;
+}
+
+::selection {
+    background: var(--azul);
+    color: var(--papel-2);
+}
+
+/* ========== O CABEÇALHO ========== */
+
+#masthead {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 16px 12px;
+    background: var(--topo-fundo);
+    color: var(--topo-texto);
+    border-bottom: var(--borda) solid var(--topo-fundo);
+    background-image: var(--meiotom);
+    background-size: var(--meiotom-tam);
+    background-blend-mode: soft-light;
+    box-shadow: inset 0 -6px 0 var(--azul);
+    padding-bottom: 18px;
+    /* na tela inicial do iPhone o app sobe até embaixo do relógio */
+    padding-top: calc(14px + env(safe-area-inset-top));
+}
+
+.marca {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    min-width: 0;
+}
+
+h1 {
+    font-family: var(--display);
+    font-size: 26px;
+    font-weight: 400;
+    letter-spacing: .01em;
+    text-transform: uppercase;
+    margin: 0;
+    color: var(--topo-texto);
+    text-shadow: 2px 2px 0 var(--azul);
+}
+
+.marca-jp {
+    font-family: var(--kana);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: .14em;
+    color: var(--azul-claro);
+    white-space: nowrap;
+}
+
+#placar {
+    font-family: var(--display);
+    font-size: 14px;
+    letter-spacing: .06em;
+    padding: 4px 10px 3px;
+    color: var(--papel-2);
+    background: var(--azul);
+    border-radius: 2px;
+    white-space: nowrap;
+}
+
+#placar:empty {
+    display: none;
+}
+
+.topo-direita {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.tema {
+    font-family: var(--display);
+    font-size: 12px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: 5px 10px 4px;
+    min-width: 62px;
+    color: var(--topo-texto);
+    background: none;
+    border: 2px solid var(--topo-texto);
+    border-radius: 2px;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.tema:active {
+    color: var(--topo-fundo);
+    background: var(--topo-texto);
+}
+
+/* ========== O PALCO ========== */
+
+#palco {
+    --pad: 16px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100svh - 300px);
+    max-width: 700px;
+    margin: 18px auto 0;
+    padding: 0 var(--pad) 22px;
+    background: var(--papel-2);
+    border: var(--borda) solid var(--tinta);
+    border-radius: var(--raio);
+    box-shadow: var(--sombra);
+}
+
+/* na apresentação o cartão ocupa o palco inteiro, de borda a borda */
+#palco:has(#apresentacao:not([hidden])) {
+    padding-bottom: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* o miolo respira: a pergunta no alto, o que se responde no meio,
+   a devolutiva embaixo. as duas margens automáticas dividem a sobra. */
+#opcoes,
+#digitacao,
+#desenho,
+#bandeja,
+#resposta {
+    margin-top: auto;
+}
+
+#palco:has(#apresentacao:not([hidden]))::after {
+    display: none;
+}
+
+/* ---- a chapa azul: motivo + pergunta + significado formam um bloco só ---- */
+
+#motivo,
+#pergunta,
+#significado {
+    position: relative;
+    margin-left: calc(var(--pad) * -1);
+    margin-right: calc(var(--pad) * -1);
+    padding-left: var(--pad);
+    padding-right: var(--pad);
+    background: var(--chapa);
+    color: var(--chapa-texto);
+}
+
+#motivo {
+    margin-top: 0;
+    padding-top: 16px;
+    padding-bottom: 2px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--chapa-sub);
+    min-height: 34px;
+}
+
+#motivo:has(+ #pergunta[hidden]) {
+    padding-bottom: 14px;
+    border-bottom: var(--borda) solid var(--tinta);
+}
+
+#pergunta {
+    font-family: var(--kana);
+    font-weight: 900;
+    font-size: clamp(88px, 30vw, 150px);
+    line-height: 1;
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 0;
+    min-height: 168px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* o meio-tom que abre para baixo, como uma chapa de risografia */
+#pergunta::before {
+    content: "";
+    position: absolute;
+    inset: -40px 0 0;
+    pointer-events: none;
+    background-image: radial-gradient(var(--chapa-texto) 1.7px, transparent 1.9px);
+    background-size: 8px 8px;
+    opacity: .45;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 30%, #000 105%);
+    mask-image: linear-gradient(to bottom, transparent 30%, #000 105%);
+}
+
+#pergunta>* {
+    position: relative;
+}
+
+#pergunta .som {
+    color: var(--chapa);
+    background: var(--chapa-texto);
+}
+
+#pergunta.romaji {
+    font-family: var(--display);
+    font-size: clamp(56px, 19vw, 96px);
+    font-weight: 400;
+    letter-spacing: .01em;
+    text-transform: lowercase;
+}
+
+#pergunta.palavra {
+    font-size: clamp(44px, 14vw, 74px);
+    letter-spacing: .04em;
+}
+
+#significado {
+    text-align: center;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--chapa-sub);
+    min-height: 22px;
+    padding-bottom: 18px;
+    margin-bottom: 22px;
+    border-bottom: var(--borda) solid var(--tinta);
+}
+
+/* ---- o carimbo de certo e de errado ---- */
+
+@keyframes carimbar {
+    0% {
+        opacity: 0;
+        transform: scale(2.1) rotate(-14deg);
+    }
+
+    55% {
+        opacity: 1;
+        transform: scale(.92) rotate(-7deg);
+    }
+
+    70% {
+        transform: scale(1.04) rotate(-9deg);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(-8deg);
+    }
+}
+
+@keyframes desalinhar {
+    0% {
+        transform: translate(5px, -4px);
+    }
+
+    28% {
+        transform: translate(-4px, 3px);
+    }
+
+    55% {
+        transform: translate(2px, -1px);
+    }
+
+    100% {
+        transform: translate(0, 0);
+    }
+}
+
+/* no erro a chapa inteira vira vermelha: não dá para não ver */
+#palco.errou {
+    --chapa: var(--chapa-erro);
+    --chapa-sub: var(--chapa-erro-sub);
+}
+
+#palco.acertou #pergunta,
+#palco.errou #pergunta {
+    animation: desalinhar .34s steps(1, end);
+}
+
+/* o carimbo cai no canto, como num papel de verdade:
+   o caractere continua inteiro para você poder olhar de novo */
+#palco.acertou #pergunta::after,
+#palco.errou #pergunta::after {
+    content: "";
+    position: absolute;
+    top: 6px;
+    right: 4px;
+    width: clamp(74px, 20vw, 104px);
+    height: clamp(74px, 20vw, 104px);
+    background: var(--chapa-texto);
+    opacity: 0;
+    pointer-events: none;
+    animation: carimbar .42s cubic-bezier(.2, 1.5, .5, 1) forwards;
+}
+
+#palco.acertou #pergunta::after {
+    -webkit-mask: var(--icone-certo) center / contain no-repeat;
+    mask: var(--icone-certo) center / contain no-repeat;
+}
+
+#palco.errou #pergunta::after {
+    -webkit-mask: var(--icone-errado) center / contain no-repeat;
+    mask: var(--icone-errado) center / contain no-repeat;
+}
+
+
+
+@media (prefers-reduced-motion: reduce) {
+
+    #palco.acertou #pergunta,
+    #palco.errou #pergunta,
+    #palco.acertou #pergunta::after,
+    #palco.errou #pergunta::after {
+        animation-duration: .01ms;
+    }
+}
+
+/* ========== O EXERCÍCIO ========== */
+
+#opcoes {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.opcao {
+    font-family: var(--display);
+    font-size: 24px;
+    letter-spacing: .02em;
+    text-transform: lowercase;
+    flex: 1;
+    min-width: 0;
+    max-width: 150px;
+    min-height: 66px;
+    color: var(--tinta);
+    background: var(--papel-2);
+    border: var(--borda) solid var(--tinta);
+    border-radius: var(--raio);
+    box-shadow: var(--sombra);
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: transform .06s, box-shadow .06s, background .1s, color .1s;
+}
+
+.opcao:active {
+    transform: translate(4px, 4px);
+    box-shadow: 1px 1px 0 var(--sombra-cor);
+}
+
+@media (hover: hover) {
+    .opcao:hover {
+        background: var(--azul-fundo);
+    }
+}
+
+.opcao.kana {
+    font-family: var(--kana);
+    font-weight: 700;
+    font-size: 42px;
+    text-transform: none;
+    min-height: 92px;
+}
+
+.opcao.certa {
+    color: var(--papel-2);
+    background: var(--azul);
+    border-color: var(--tinta);
+    box-shadow: var(--sombra);
+}
+
+.opcao.errada {
+    color: var(--vermelho);
+    background: var(--vermelho-fundo);
+}
+
+/* o alto-falante é desenhado por css: o emoji colorido brigava com a paleta */
+.som {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0;
+    line-height: 1;
+    width: 116px;
+    height: 116px;
+    color: var(--papel-2);
+    background: var(--azul);
+    border: var(--borda) solid var(--tinta);
+    border-radius: 50%;
+    box-shadow: var(--sombra);
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: transform .06s, box-shadow .06s;
+}
+
+.som::before {
+    content: "";
+    display: block;
+    width: 44%;
+    height: 44%;
+    background: currentColor;
+    -webkit-mask: var(--icone-som) center / contain no-repeat;
+    mask: var(--icone-som) center / contain no-repeat;
+}
+
+.som:active {
+    transform: translate(4px, 4px);
+    box-shadow: 1px 1px 0 var(--sombra-cor);
+}
+
+#digitacao {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    margin-top: 4px;
+}
+
+#verificar {
+    min-width: 200px;
+}
+
+/* ---- o modo teclado ----
+   no celular o teclado come metade da tela. quando o campo de digitar
+   está em jogo, o exercício inteiro encolhe para caber acima dele:
+   sem altura mínima, sem margens automáticas, pergunta menor. */
+#palco:has(#digitacao:not([hidden])) {
+    min-height: 0;
+}
+
+#palco:has(#digitacao:not([hidden])) #opcoes,
+#palco:has(#digitacao:not([hidden])) #digitacao,
+#palco:has(#digitacao:not([hidden])) #resposta {
+    margin-top: 0;
+}
+
+#palco:has(#digitacao:not([hidden])) #pergunta {
+    min-height: 128px;
+    font-size: clamp(66px, 23vw, 118px);
+}
+
+#palco:has(#digitacao:not([hidden])) #pergunta.romaji {
+    font-size: clamp(46px, 15vw, 80px);
+}
+
+#palco:has(#digitacao:not([hidden])) #pergunta.palavra {
+    font-size: clamp(38px, 12vw, 62px);
+}
+
+#palco:has(#digitacao:not([hidden])) #motivo {
+    padding-top: 12px;
+    min-height: 30px;
+}
+
+#palco:has(#digitacao:not([hidden])) #significado {
+    padding-bottom: 12px;
+    margin-bottom: 18px;
+}
+
+#palco:has(#digitacao:not([hidden])) #resposta {
+    padding-top: 16px;
+    min-height: 54px;
+}
+
+#entrada {
+    font-family: var(--display);
+    font-size: 32px;
+    letter-spacing: .04em;
+    text-align: center;
+    text-transform: lowercase;
+    width: min(280px, 78%);
+    padding: 8px 4px 4px;
+    color: var(--tinta);
+    background: none;
+    border: 0;
+    border-bottom: 4px solid var(--tinta);
+    border-radius: 0;
+    outline: none;
+}
+
+#entrada::placeholder {
+    color: var(--cinza-claro);
+    font-size: 22px;
+}
+
+#entrada.certa {
+    color: var(--azul);
+    border-bottom-color: var(--azul);
+}
+
+#entrada.errada {
+    color: var(--vermelho);
+    border-bottom-color: var(--vermelho);
+}
+
+#resposta {
+    text-align: center;
+    padding-top: 20px;
+    min-height: 62px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--cinza);
+    white-space: pre-line;
+    line-height: 1.7;
+}
+
+/* depois de responder, a primeira linha é o veredito: "Isso!", "Era ka".
+   fora disso o #resposta é só o contador de traços, e fica pequeno. */
+#palco.acertou #resposta::first-line,
+#palco.errou #resposta::first-line {
+    font-family: var(--display);
+    font-size: 24px;
+    letter-spacing: .03em;
+}
+
+#palco.acertou #resposta::first-line {
+    color: var(--azul);
+}
+
+#palco.errou #resposta::first-line {
+    color: var(--vermelho);
+}
+
+/* ========== OS BOTÕES DE AÇÃO ========== */
+
+.acao {
+    font-family: var(--texto);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .03em;
+    padding: 12px 20px;
+    min-height: 48px;
+    color: var(--tinta);
+    background: var(--papel-2);
+    border: var(--borda) solid var(--tinta);
+    border-radius: var(--raio);
+    box-shadow: 4px 4px 0 var(--sombra-cor);
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform .06s, box-shadow .06s;
+}
+
+.acao:active {
+    transform: translate(3px, 3px);
+    box-shadow: 1px 1px 0 var(--sombra-cor);
+}
+
+.acao.principal {
+    flex: 1;
+    color: var(--papel-2);
+    background: var(--azul);
+}
+
+.acao.apagar {
+    color: var(--vermelho);
+    background: var(--vermelho-fundo);
+}
+
+/* ========== DESENHAR ========== */
+
+#desenho {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+#quadro {
+    width: min(300px, 78vw);
+    height: min(300px, 78vw);
+    background: var(--papel-2);
+    border: var(--borda) solid var(--tinta);
+    border-radius: var(--raio);
+    box-shadow: var(--sombra);
+    touch-action: none;
+    cursor: crosshair;
+}
+
+#acoes-desenho {
+    display: flex;
+    gap: 10px;
+}
+
+/* ========== A FITA: sequência, ditado, trecho, lacuna ========== */
+
+#fita {
+    position: relative;
+    margin-top: 18px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 4px;
+    min-height: 80px;
+    margin: 4px 0 16px;
+}
+
+.casa {
+    font-family: var(--kana);
+    font-weight: 700;
+    font-size: clamp(28px, 7.5vw, 46px);
+    line-height: 1;
+    padding: 8px 8px;
+    border-radius: var(--raio);
+    color: var(--cinza-claro);
+    transition: color .12s, background .12s, box-shadow .12s;
+}
+
+.casa.agora {
+    color: var(--papel-2);
+    background: var(--azul);
+    box-shadow: 3px 3px 0 var(--sombra-cor);
+}
+
+.casa.feita {
+    color: var(--azul);
+}
+
+.casa.tropecou {
+    color: var(--vermelho);
+}
+
+.casa.fixa {
+    color: var(--cinza-claro);
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
+#fita.modo-lacuna .casa.fixa {
+    color: var(--tinta);
+}
+
+#fita.modo-lacuna .casa.agora {
+    color: var(--azul);
+    background: var(--azul-fundo);
+    box-shadow: inset 0 0 0 2.5px var(--azul);
+}
+
+/* o encaixe vazio: a bolinha ○ some e sobra a caixa de esperar */
+#fita.modo-montar .casa:not(.feita):not(.fixa),
+#fita.modo-lacuna .casa:not(.feita):not(.fixa) {
+    color: transparent;
+    min-width: 1.15em;
+    border-radius: var(--raio);
+    box-shadow: inset 0 0 0 2.5px var(--cinza-claro);
+}
+
+#fita.modo-montar .casa.agora:not(.fixa):not(.feita),
+#fita.modo-lacuna .casa.agora:not(.fixa):not(.feita) {
+    background: var(--azul-fundo);
+    box-shadow: inset 0 0 0 3px var(--azul);
+}
+
+#fita.modo-montar .casa.feita {
+    color: var(--papel-2);
+    background: var(--azul);
+    box-shadow: 3px 3px 0 var(--sombra-cor);
+}
+
+#ajuda-fita {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    margin-top: 14px;
+}
+
+#ajuda-fita .dica {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.5;
+    text-align: center;
+    color: var(--cinza);
+}
+
+/* ========== FURIGANA ========== */
+
+.grupo {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    margin: 0 2px;
+}
+
+.grupo .leitura {
+    display: flex;
+    gap: 2px;
+}
+
+.grupo .leitura .casa {
+    font-size: clamp(16px, 4vw, 26px);
+    padding: 3px 5px;
+}
+
+.grupo .leitura .casa.fixa {
+    color: var(--cinza-claro);
+}
+
+.grupo .pai {
+    font-family: var(--kana);
+    font-weight: 700;
+    font-size: clamp(28px, 7.5vw, 46px);
+    line-height: 1.1;
+    color: var(--tinta);
+}
+
+#fita.modo-lacuna .grupo .pai {
+    color: var(--tinta);
+}
+
+/* ========== MONTAR A PALAVRA ========== */
+
+#bandeja {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    max-width: 420px;
+    margin: 6px auto 0;
+}
+
+.peca {
+    font-family: var(--kana);
+    font-weight: 700;
+    font-size: 30px;
+    line-height: 1;
+    width: 62px;
+    height: 62px;
+    color: var(--tinta);
+    background: var(--papel-2);
+    border: var(--borda) solid var(--tinta);
+    border-radius: var(--raio);
+    box-shadow: 4px 4px 0 var(--sombra-cor);
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform .07s, box-shadow .07s, background .1s;
+}
+
+.peca:active {
+    transform: translate(3px, 3px);
+    box-shadow: 1px 1px 0 var(--sombra-cor);
+}
+
+.peca.recusada {
+    color: var(--vermelho);
+    background: var(--vermelho-fundo);
+}
+
+/* ========== A BARRA DO FOCO ========== */
+
+#foco-ativo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 14px 0 0;
+    padding: 7px 7px 7px 12px;
+    background: var(--azul-fundo);
+    border: var(--borda) solid var(--tinta);
+    border-radius: var(--raio);
+    font-size: 13px;
+}
+
+.foco-rotulo {
+    font-family: var(--display);
+    font-size: 12px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--azul);
+}
+
+.foco-texto {
+    flex: 1;
+    font-weight: 600;
+    color: var(--tinta);
+}
+
+.foco-conta {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--cinza);
+    white-space: nowrap;
+}
+
+.foco-x {
+    font-family: var(--texto);
+    font-size: 14px;
+    font-weight: 700;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    color: var(--papel-2);
+    background: var(--tinta);
+    border: 0;
+    border-radius: var(--raio);
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+/* ========== AS TELAS E A BARRA DE ABAS ========== */
+
+#abas-app {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    display: flex;
+    gap: 6px;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+    background: var(--topo-fundo);
+    box-shadow: inset 0 6px 0 var(--azul);
+}
+
+.aba-app {
+    flex: 1;
+    min-height: 48px;
+    font-family: var(--display);
+    font-size: 14px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--topo-texto);
+    background: none;
+    border: 2px solid transparent;
+    border-radius: var(--raio);
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.aba-app.agora {
+    color: var(--papel-2);
+    background: var(--azul);
+    border-color: var(--azul);
+}
+
+#telas {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+.tela {
+    display: block;
+}
+
+.titulo-tela {
+    margin: 26px 0 4px;
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 400;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--tinta);
+}
+
+.titulo-tela:first-child {
+    margin-top: 20px;
+}
+
+/* ========== A TELA DE ABERTURA ========== */
+
+.capa {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 20px;
+    padding: 26px 20px 30px;
+    color: var(--chapa-texto);
+    background: var(--chapa);
+    border: var(--borda) solid var(--tinta);
+    border-radius: var(--raio) var(--raio) 0 0;
+    overflow: hidden;
+}
+
+.capa::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(var(--chapa-texto) 1.7px, transparent 1.9px);
+    background-size: 8px 8px;
+    opacity: .4;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 15%, #000 70%, transparent 88%);
+    mask-image: linear-gradient(to bottom, transparent 15%, #000 70%, transparent 88%);
+}
+
+.capa>* {
+    position: relative;
+}
+
+.capa-jp {
+    font-family: var(--kana);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: .3em;
+    color: var(--chapa-sub);
+}
+
+.capa-titulo {
+    font-family: var(--display);
+    font-size: clamp(34px, 10vw, 52px);
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: .01em;
+    text-transform: uppercase;
+}
+
+/* a linha de estado ganha uma tarja sólida: senão o meio-tom come a leitura */
+.capa-estado {
+    align-self: flex-start;
+    margin-top: 8px;
+    padding: 5px 9px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.5;
+    color: var(--chapa-texto);
+    background: var(--chapa);
+    box-shadow: 0 0 0 3px var(--chapa);
+}
+
+.escolha {
+    padding: 20px;
+    background: var(--papel-2);
+    border: var(--borda) solid var(--tinta);
+    border-top: 0;
+    border-radius: 0 0 var(--raio) var(--raio);
+    box-shadow: var(--sombra);
+}
+
+.escolha h3 {
+    margin: 0 0 14px;
+    font-family: var(--display);
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--cinza);
+}
+
+.modos,
+.tamanhos {
+    display: flex;
+    gap: 8px;
+}
+
+.modos {
+    margin-bottom: 10px;
+}
+
+.pilula {
+    flex: 1;
+    min-height: 48px;
+    font-family: var(--texto);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .02em;
+    color: var(--tinta);
+    background: var(--papel);
+    border: var(--borda) solid var(--tinta);
+    border-radius: var(--raio);
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform .06s, box-shadow .06s;
+}
+
+.pilula:active {
+    transform: translate(3px, 3px);
+}
+
+.pilula.agora {
+    color: var(--papel-2);
+    background: var(--azul);
+    box-shadow: 4px 4px 0 var(--sombra-cor);
+}
+
+.pilula.modo {
+    font-family: var(--display);
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+}
+
+.comecar {
+    width: 100%;
+    min-height: 62px;
+    margin-top: 20px;
+    font-family: var(--display);
+    font-size: 20px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.escolha .nota {
+    margin-top: 14px;
+}
+
+/* ========== A BARRA DA SESSÃO ========== */
+
+#sessao-barra {
+    margin-top: 18px;
+}
+
+.sessao-trilho {
+    height: 12px;
+    background: var(--papel-3);
+    border: var(--borda) solid var(--tinta);
+    border-radius: var(--raio);
+    overflow: hidden;
+}
+
+.sessao-trilho span {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: var(--azul);
+    transition: width .3s;
+}
+
+.sessao-linha {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 7px;
+}
+
+#sessao-conta {
+    font-family: var(--display);
+    font-size: 13px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--cinza);
+}
+
+.sessao-parar {
+    font-family: var(--texto);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    min-height: 34px;
+    color: var(--cinza);
+    background: none;
+    border: 2px solid var(--cinza-claro);
+    border-radius: var(--raio);
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+/* ========== A TELA DE FIM ========== */
+
+#fim {
+    margin-top: 20px;
+    padding: 24px 20px;
+    background: var(--papel-2);
+    border: var(--borda) solid var(--tinta);
+    border-radius: var(--raio);
+    box-shadow: var(--sombra);
+}
+
+.fim-topo {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.fim-numero {
+    font-family: var(--display);
+    font-size: clamp(72px, 22vw, 110px);
+    font-weight: 400;
+    line-height: .9;
+    color: var(--azul);
+}
+
+.fim-rotulo {
+    font-family: var(--display);
+    font-size: 16px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--cinza);
+}
+
+#fim .fila {
+    gap: 8px;
+}
+
+#fim .nota {
+    margin-top: 16px;
+}
+
+.fim-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+.fim-acoes .acao {
+    flex: 1 1 auto;
+}
+
+/* ========== AS GAVETAS QUE SOBRARAM ========== */
+
+#backup {
+    margin-top: 26px;
+    padding: 0;
+    background: var(--papel-2);
+    border: var(--borda) solid var(--tinta);
+    border-radius: var(--raio);
+    box-shadow: 4px 4px 0 var(--sombra-cor);
+}
+
+#backup summary {
+    font-family: var(--display);
+    font-size: 16px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    list-style: none;
+    padding: 14px 16px;
+    cursor: pointer;
+    color: var(--tinta);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#backup summary::-webkit-details-marker {
+    display: none;
+}
+
+#backup summary::after {
+    content: "+";
+    font-size: 22px;
+    line-height: 1;
+    color: var(--azul);
+}
+
+#backup[open] summary {
+    color: var(--papel-2);
+    background: var(--tinta);
+}
+
+#backup[open] summary::after {
+    content: "−";
+    color: var(--azul-claro);
+}
+
+#backup>*:not(summary) {
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+/* ---- controles do foco ---- */
+
+.foco-linha {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.foco-linha label {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--cinza);
+}
+
+.foco-linha select {
+    font-family: var(--texto);
+    font-size: 15px;
+    font-weight: 600;
+    padding: 10px;
+    min-height: 46px;
+    color: var(--tinta);
+    background: var(--papel);
+    border: var(--borda) solid var(--tinta);
+    border-radius: var(--raio);
+}
+
+/* ========== O BACKUP ========== */
+
+.backup-estado {
+    margin: 16px 0 0;
+    font-family: var(--display);
+    font-size: 17px;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    color: var(--azul);
+}
+
+.backup-estado.atrasado {
+    color: var(--vermelho);
+}
+
+#backup .nota {
+    margin-top: 8px;
+    max-width: 52ch;
+}
+
+.backup-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 16px 0 20px;
+}
+
+/* o <label> faz as vezes de botão para o campo de arquivo, que fica escondido */
+.backup-acoes .acao {
+    flex: 1 1 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+/* ========== MEUS TEXTOS ========== */
+
+.texto-novo {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 14px 0 20px;
+    padding: 16px;
+    background: var(--papel);
+    border: var(--borda) solid var(--tinta);
+    border-radius: var(--raio);
+    box-shadow: 4px 4px 0 var(--sombra-cor);
+}
+
+.texto-novo-titulo {
+    margin: 0 0 2px;
+    font-family: var(--display);
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+}
+
+.texto-novo .nota {
+    margin: 0;
+}
+
+.texto-novo .nota code {
+    font-family: var(--kana);
+    font-size: 14px;
+    padding: 1px 5px;
+    color: var(--tinta);
+    background: var(--azul-fundo);
+    border-radius: 3px;
+}
+
+.texto-novo input,
+.texto-novo textarea {
+    font-family: var(--texto);
+    font-size: 15px;
+    padding: 11px 12px;
+    color: var(--tinta);
+    background: var(--papel-2);
+    border: 2px solid var(--tinta);
+    border-radius: var(--raio);
+    resize: vertical;
+}
+
+.texto-novo textarea {
+    font-family: var(--kana);
+    font-size: 17px;
+    line-height: 1.8;
+    min-height: 120px;
+}
+
+.texto-novo input:focus,
+.texto-novo textarea:focus,
+.foco-linha select:focus {
+    outline: 2.5px solid var(--azul);
+    outline-offset: 1px;
+}
+
+.texto-novo button {
+    align-self: flex-start;
+    flex: none;
+    margin-top: 4px;
+}
+
+.lista-textos {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.texto-item {
+    padding: 0;
+    overflow: hidden;
+    background: var(--papel-2);
+    border: var(--borda) solid var(--tinta);
+    border-radius: var(--raio);
+}
+
+.texto-item.estudando {
+    box-shadow: 5px 5px 0 var(--azul);
+}
+
+.texto-item .trilho {
+    height: 8px;
+    margin: 0;
+    border: 0;
+    border-top: var(--borda) solid var(--tinta);
+    border-bottom: var(--borda) solid var(--tinta);
+    border-radius: 0;
+}
+
+.texto-cabeca {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 14px;
+}
+
+.texto-item.estudando .texto-cabeca {
+    color: var(--chapa-texto);
+    background: var(--chapa);
+}
+
+.texto-cabeca strong {
+    font-family: var(--display);
+    font-size: 17px;
+    font-weight: 400;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+}
+
+.texto-item.estudando .medidor {
+    color: var(--chapa);
+    background: var(--chapa-texto);
+}
+
+.amostra {
+    font-family: var(--kana);
+    margin: 0;
+    padding: 14px;
+    font-size: 17px;
+    line-height: 1.8;
+    color: var(--tinta);
+    word-break: break-all;
+    background: var(--papel);
+}
+
+.texto-numeros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    padding: 0 14px;
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--cinza);
+}
+
+.texto-numeros b {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 15px;
+    color: var(--azul);
+}
+
+.texto-item .nota {
+    padding: 0 14px;
+}
+
+.amostra ruby rt {
+    font-size: 0.5em;
+    color: var(--azul);
+}
+
+.texto-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 14px;
+    margin-top: 4px;
+}
+
+.texto-acoes .acao {
+    flex: 1 1 auto;
+}
+
+.selo-estudando {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 14px;
+    min-height: 48px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--papel-2);
+    background: var(--azul);
+    border: var(--borda) solid var(--tinta);
+    border-radius: var(--raio);
+}
+
+.aviso-kanji code {
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+    padding: 1px 5px;
+    background: var(--papel-3);
+    border-radius: 3px;
+}
+
+/* ========== A APRESENTAÇÃO DE CARACTERE NOVO ========== */
+
+@keyframes tracar {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes aparecer {
+    to {
+        opacity: 1;
+    }
+}
+
+#apresentacao {
+    position: relative;
+    margin: 0 calc(var(--pad) * -1);
+    text-align: left;
+}
+
+/* ---- a chapa de abertura: o traço grande sobre o azul ---- */
+
+.novo-figura {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: clamp(250px, 58vw, 320px);
+    padding-top: 26px;
+    background: var(--chapa);
+}
+
+.novo-figura::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(var(--chapa-texto) 1.7px, transparent 1.9px);
+    background-size: 8px 8px;
+    opacity: .4;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 25%, #000 105%);
+    mask-image: linear-gradient(to bottom, transparent 25%, #000 105%);
+}
+
+/* o quadro branco flutuando no azul, como um cel de animação */
+.novo-figura .tracado,
+.novo-figura .kana-enorme {
+    position: relative;
+    width: clamp(168px, 42vw, 216px);
+    height: clamp(168px, 42vw, 216px);
+    background: var(--papel-2);
+    border: var(--borda) solid var(--tinta);
+    border-radius: var(--raio);
+    box-shadow: 7px 7px 0 var(--tinta);
+}
+
+.novo-topo {
+    display: block;
+}
+
+/* só na apresentação a etiqueta flutua sobre a chapa azul */
+#apresentacao .etiqueta {
+    position: absolute;
+    top: 14px;
+    left: var(--pad);
+    z-index: 2;
+    margin: 0;
+}
+
+.novo-info {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    padding: 16px var(--pad) 0;
+    border-top: var(--borda) solid var(--tinta);
+}
+
+.som-novo {
+    flex-shrink: 0;
+}
+
+.novo-info .sub {
+    flex: 1;
+    margin-left: 0;
+    line-height: 1.35;
+}
+
+#apresentacao .ponte,
+#apresentacao .aviso,
+#apresentacao .nota,
+#apresentacao .acoes-novo {
+    margin-left: var(--pad);
+    margin-right: var(--pad);
+}
+
+#apresentacao .acoes-novo {
+    margin-bottom: 20px;
+}
+
+.etiqueta {
+    display: inline-block;
+    margin-bottom: 14px;
+    padding: 5px 12px;
+    font-family: var(--display);
+    font-size: 12px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--papel-2);
+    background: var(--azul);
+    border: var(--borda) solid var(--tinta);
+    border-radius: 999px;
+}
+
+.etiqueta.cinza {
+    color: var(--papel-2);
+    background: var(--cinza);
+}
+
+.kana-enorme {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--kana);
+    font-weight: 900;
+    font-size: clamp(96px, 24vw, 128px);
+    line-height: 1;
+    color: var(--tinta);
+}
+
+.som-novo {
+    font-family: var(--display);
+    font-size: 46px;
+    font-weight: 400;
+    line-height: 1;
+    text-transform: lowercase;
+    color: var(--azul);
+}
+
+#apresentacao .som {
+    width: 48px;
+    height: 48px;
+    color: var(--tinta);
+    background: var(--papel-2);
+}
+
+.ponte,
+.aviso {
+    margin: 14px 0 0;
+    padding: 11px 13px;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.55;
+    border: var(--borda) solid var(--tinta);
+    border-radius: var(--raio);
+}
+
+.ponte {
+    color: var(--tinta);
+    background: var(--azul-fundo);
+    border-left: 7px solid var(--azul);
+}
+
+.aviso {
+    color: var(--tinta);
+    background: var(--papel-3);
+    border-left: 7px solid var(--vermelho);
+}
+
+.kana-linha {
+    font-family: var(--kana);
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.acoes-novo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.acoes-novo .acao {
+    flex: 1 1 auto;
+}
+
+.acoes-novo .acao.principal {
+    flex: 1 1 100%;
+}
+
+/* ---- o diagrama de traços ---- */
+
+.tracado {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: var(--papel-2);
+    border: var(--borda) solid var(--tinta);
+    border-radius: var(--raio);
+}
+
+.tracado .guia {
+    stroke: var(--cinza-claro);
+    stroke-width: 1;
+    stroke-dasharray: 4 4;
+}
+
+.tracado .traco {
+    fill: none;
+    stroke: var(--tinta);
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.tracado .bolha {
+    fill: var(--azul);
+}
+
+.tracado .ordem {
+    fill: #fff;
+    font-family: var(--texto);
+    font-size: 10px;
+    font-weight: 700;
+    text-anchor: middle;
+}
+
+.diagrama {
+    width: 110px;
+    height: 110px;
+    margin: 0 0 12px;
+}
+
+/* ========== A TELA DE PROGRESSO ========== */
+
+#resumo {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 14px 0;
+}
+
+.cartao {
+    background: var(--papel);
+    border: var(--borda) solid var(--tinta);
+    border-radius: var(--raio);
+    padding: 16px 18px;
+}
+
+.cartao h3 {
+    margin: 0 0 14px;
+    font-family: var(--display);
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--tinta);
+}
+
+.barra {
+    display: flex;
+    height: 12px;
+    gap: 2px;
+    border: 2px solid var(--tinta);
+    border-radius: 2px;
+    overflow: hidden;
+    background: var(--papel-3);
+}
+
+.fatia.novo {
+    background: var(--papel-3);
+}
+
+.fatia.aprendendo {
+    background: var(--azul-claro);
+}
+
+.fatia.firme {
+    background: var(--azul);
+}
+
+.fatia.dominado {
+    background: var(--azul-escuro);
+}
+
+.legenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    color: var(--cinza);
+}
+
+.ponto {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border: 1.5px solid var(--tinta);
+    margin-right: 5px;
+}
+
+.ponto.novo {
+    background: var(--papel-3);
+}
+
+.ponto.aprendendo {
+    background: var(--azul-claro);
+}
+
+.ponto.firme {
+    background: var(--azul);
+}
+
+.ponto.dominado {
+    background: var(--azul-escuro);
+}
+
+.linha-barra {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 9px;
+}
+
+.rotulo {
+    width: 112px;
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--tinta);
+}
+
+.linha-barra .barra {
+    flex: 1;
+}
+
+.numero {
+    width: 44px;
+    text-align: right;
+    font-family: var(--display);
+    font-size: 13px;
+    color: var(--cinza);
+}
+
+.nota {
+    margin: 10px 0 0;
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--cinza);
+}
+
+.fila {
+    display: flex;
+    gap: 8px;
+}
+
+.caixa {
+    flex: 1;
+    text-align: center;
+    background: var(--papel-2);
+    border: 2px solid var(--tinta);
+    border-radius: var(--raio);
+    padding: 10px 4px;
+}
+
+.caixa strong {
+    display: block;
+    font-family: var(--display);
+    font-size: 24px;
+    font-weight: 400;
+    color: var(--azul);
+}
+
+.caixa span {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--cinza);
+}
+
+.pares {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.par {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+}
+
+.par .kana {
+    font-family: var(--kana);
+    font-size: 21px;
+    font-weight: 700;
+}
+
+.par .explica {
+    font-size: 12px;
+    color: var(--cinza);
+}
+
+.frase {
+    margin: 0 0 14px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--cinza);
+}
+
+.nota.topo {
+    margin: 0 0 12px;
+}
+
+.placar-grande {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.titulo-kana {
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 400;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+}
+
+.sub {
+    margin-left: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--cinza);
+}
+
+.grande {
+    font-family: var(--display);
+    font-size: 36px;
+    font-weight: 400;
+    color: var(--azul);
+}
+
+.trilho {
+    height: 10px;
+    margin: 9px 0;
+    border: 2px solid var(--tinta);
+    border-radius: 2px;
+    background: var(--papel-3);
+    overflow: hidden;
+}
+
+.trilho span {
+    display: block;
+    height: 100%;
+    background: var(--azul);
+}
+
+.trilho.escuro span {
+    background: var(--azul-escuro);
+}
+
+.habilidades,
+.formatos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+}
+
+.habilidade .cabeca,
+.formato .cabeca {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.habilidade .cabeca span,
+.formato .cabeca span {
+    font-family: var(--display);
+    font-weight: 400;
+    color: var(--cinza);
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.habilidade small,
+.formato small {
+    font-size: 11px;
+    color: var(--cinza);
+}
+
+.ranking {
+    display: flex;
+    flex-direction: column;
+}
+
+.ranking .item {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 8px 0;
+    border-top: 1.5px solid var(--papel-3);
+}
+
+.ranking .item:first-child {
+    border-top: none;
+}
+
+.ranking .kana {
+    font-family: var(--kana);
+    font-size: 23px;
+    font-weight: 700;
+    min-width: 32px;
+}
+
+.ranking .leitura {
+    font-size: 12px;
+    color: var(--cinza);
+    flex: 1;
+}
+
+.ranking .kana,
+.par .kana {
+    line-height: 1;
+}
+
+.ranking .valor {
+    font-family: var(--display);
+    font-size: 13px;
+    color: var(--azul);
+}
+
+.grafico {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+}
+
+.barra-dia {
+    fill: var(--azul-fundo);
+    stroke: var(--tinta);
+    stroke-width: 1.5;
+}
+
+.eixo {
+    stroke: var(--tinta);
+    stroke-width: 2;
+}
+
+.eixo.tracejado {
+    stroke: var(--cinza-claro);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 4;
+}
+
+.area-dominio {
+    fill: var(--azul);
+    opacity: .16;
+}
+
+.linha-dominio {
+    fill: none;
+    stroke: var(--azul);
+    stroke-width: 3;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+}
+
+.ponto-dominio {
+    fill: var(--azul);
+    stroke: var(--papel);
+    stroke-width: 2;
+}
+
+.rotulo-dia {
+    font-family: var(--display);
+    font-size: 10px;
+    fill: var(--cinza);
+    text-anchor: middle;
+}
+
+.rotulo-eixo {
+    font-family: var(--display);
+    font-size: 11px;
+    letter-spacing: .05em;
+    fill: var(--azul);
+    text-transform: uppercase;
+}
+
+.detalhe-topo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.kana-grande {
+    font-family: var(--kana);
+    font-size: 48px;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--azul);
+}
+
+.detalhe-topo strong {
+    display: block;
+    font-family: var(--display);
+    font-size: 17px;
+    font-weight: 400;
+    text-transform: uppercase;
+}
+
+.detalhe-topo .sub {
+    margin-left: 0;
+}
+
+#detalhe {
+    margin-top: 12px;
+    min-height: 20px;
+    font-size: 13px;
+    color: var(--cinza);
+    padding-bottom: 8px;
+}
+
+#detalhe .habilidade {
+    margin-bottom: 10px;
+}
+
+#apagar {
+    font-family: var(--texto);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    padding: 12px 18px;
+    min-height: 46px;
+    color: var(--vermelho);
+    background: var(--vermelho-fundo);
+    border: var(--borda) solid var(--tinta);
+    border-radius: var(--raio);
+    box-shadow: 4px 4px 0 var(--sombra-cor);
+    cursor: pointer;
+}
+
+/* ========== A ESCADA DO CARACTERE ========== */
+
+.escada {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 14px 0;
+}
+
+.passo {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 9px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    color: var(--cinza);
+    background: var(--papel-2);
+    border: 2px solid var(--cinza-claro);
+    border-radius: var(--raio);
+}
+
+.passo b {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 12px;
+}
+
+.passo.feito {
+    color: var(--papel-2);
+    background: var(--azul);
+    border-color: var(--tinta);
+}
+
+.passo.agora {
+    color: var(--tinta);
+    background: var(--azul-fundo);
+    border-color: var(--tinta);
+    box-shadow: 3px 3px 0 var(--sombra-cor);
+}
+
+/* ========== DOIS SILABÁRIOS ========== */
+
+.silabarios {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 14px;
+}
+
+.silabario {
+    background: var(--papel-2);
+    border: 2px solid var(--tinta);
+    border-radius: var(--raio);
+    padding: 12px 14px;
+}
+
+.silabario .legenda {
+    margin-top: 8px;
+    gap: 10px;
+}
+
+/* ========== AS ABAS DO PROGRESSO ========== */
+
+.abas {
+    display: flex;
+    gap: 6px;
+    margin: 14px 0 16px;
+}
+
+.aba {
+    font-family: var(--display);
+    font-size: 13px;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    flex: 1;
+    padding: 11px 6px 9px;
+    min-height: 44px;
+    color: var(--tinta);
+    background: var(--papel);
+    border: var(--borda) solid var(--tinta);
+    border-radius: var(--raio);
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.aba.agora {
+    color: var(--papel-2);
+    background: var(--azul);
+    box-shadow: 3px 3px 0 var(--sombra-cor);
+}
+
+/* ========== O MAPA DOS CARACTERES ========== */
+
+#mapa {
+    padding-bottom: 6px;
+}
+
+.nivel {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.nivel-cabeca {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 14px;
+    text-align: left;
+    color: var(--tinta);
+    background: var(--papel);
+    border: var(--borda) solid var(--tinta);
+    border-radius: var(--raio);
+    cursor: pointer;
+    touch-action: manipulation;
+    font-family: var(--texto);
+}
+
+.silabario>.nivel-cabeca {
+    background: var(--papel-2);
+    box-shadow: 4px 4px 0 var(--sombra-cor);
+}
+
+.silabario.aberto>.nivel-cabeca {
+    color: var(--papel-2);
+    background: var(--tinta);
+    border-radius: var(--raio) var(--raio) 0 0;
+}
+
+.nivel-seta {
+    font-family: var(--display);
+    font-size: 18px;
+    line-height: 1;
+    width: 22px;
+    flex-shrink: 0;
+    text-align: center;
+    color: var(--azul);
+}
+
+.silabario.aberto>.nivel-cabeca .nivel-seta {
+    color: var(--azul-claro);
+}
+
+.nivel-nome {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--display);
+    font-size: 16px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+}
+
+.nivel-nome small {
+    font-family: var(--kana);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: none;
+    margin-left: 8px;
+    opacity: .6;
+}
+
+.conjunto>.nivel-cabeca {
+    padding: 10px 12px;
+}
+
+.conjunto .nivel-nome {
+    font-size: 13px;
+}
+
+.medidor {
+    font-family: var(--display);
+    font-size: 14px;
+    flex-shrink: 0;
+    min-width: 46px;
+    text-align: center;
+    padding: 3px 8px 2px;
+    color: var(--papel-2);
+    background: var(--azul);
+    border-radius: 2px;
+}
+
+.medidor.vazio {
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--cinza);
+    background: var(--papel-3);
+}
+
+.nivel-corpo {
+    padding: 12px;
+    background: var(--papel);
+    border: var(--borda) solid var(--tinta);
+    border-top: 0;
+    border-radius: 0 0 var(--raio) var(--raio);
+    box-shadow: 4px 4px 0 var(--sombra-cor);
+}
+
+.nivel-corpo .nivel:last-child {
+    margin-bottom: 0;
+}
+
+/* ---- os cartões de linha (a i u e o, ka ki ku ke ko…) ---- */
+
+.linhas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+    align-items: start;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.linha-cartao {
+    background: var(--papel-2);
+    border: 2px solid var(--tinta);
+    border-radius: var(--raio);
+    overflow: hidden;
+}
+
+.linha-cartao.aberta {
+    box-shadow: 4px 4px 0 var(--azul);
+}
+
+.linha-cartao.intocada {
+    border-color: var(--cinza-claro);
+}
+
+.linha-cabeca {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    text-align: left;
+    font-family: var(--texto);
+    color: var(--tinta);
+    background: none;
+    border: 0;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.linha-textos {
+    flex: 1;
+    min-width: 0;
+}
+
+.linha-sons {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+
+.linha-kana {
+    display: block;
+    margin-top: 3px;
+    font-family: var(--kana);
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: .1em;
+    color: var(--cinza);
+}
+
+.linha-cartao.intocada .linha-sons,
+.linha-cartao.intocada .linha-kana {
+    color: var(--cinza-claro);
+}
+
+.linha-cartao .trilho {
+    height: 6px;
+    margin: 0;
+    border: 0;
+    border-top: 2px solid var(--tinta);
+    border-radius: 0;
+}
+
+.linha-cartao.intocada .trilho {
+    border-top-color: var(--cinza-claro);
+}
+
+.linha-fichas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+    gap: 6px;
+    padding: 10px;
+    background: var(--papel);
+    border-top: 2px solid var(--tinta);
+}
+
+/* ---- a ficha de um caractere ---- */
+
+.ficha {
+    border: 2px solid var(--cinza-claro);
+    border-radius: 3px;
+    background: var(--papel-2);
+    padding: 6px 0;
+    text-align: center;
+    color: var(--cinza-claro);
+    cursor: pointer;
+}
+
+.ficha .k {
+    display: block;
+    font-family: var(--kana);
+    font-size: 21px;
+    font-weight: 700;
+    white-space: nowrap;
+    line-height: 30px;
+}
+
+.ficha.duplo .k {
+    font-size: 16px;
+}
+
+.ficha .n {
+    display: block;
+    font-family: var(--display);
+    font-size: 11px;
+}
+
+.ficha.forte {
+    color: var(--papel-2);
+    border-color: var(--tinta);
+    background: var(--azul);
+}
+
+.ficha.media {
+    color: var(--tinta);
+    border-color: var(--tinta);
+    background: var(--azul-fundo);
+}
+
+.ficha.fraca {
+    color: var(--vermelho);
+    border-color: var(--vermelho);
+    background: var(--vermelho-fundo);
+}
+
+.ficha.escolhida {
+    outline: 3px solid var(--tinta);
+    outline-offset: 2px;
+}
+
+/* ========== A TELA GRANDE (mac) ========== */
+
+
+
+@media (min-width: 900px) {
+    #masthead {
+        padding: 18px 40px 16px;
+    }
+
+    h1 {
+        font-size: 34px;
+    }
+
+    .marca-jp {
+        font-size: 15px;
+    }
+
+    #placar {
+        font-size: 17px;
+    }
+
+    #palco {
+        --pad: 34px;
+        max-width: 900px;
+        margin-top: 34px;
+        padding: 0 var(--pad) 34px;
+        box-shadow: var(--sombra-funda);
+    }
+
+    /* marcas de corte, como uma prova de impressão */
+    #palco::after {
+        content: "";
+        position: absolute;
+        inset: -16px;
+        pointer-events: none;
+        background:
+            linear-gradient(var(--azul), var(--azul)) 0 0 / 22px 2px no-repeat,
+            linear-gradient(var(--azul), var(--azul)) 0 0 / 2px 22px no-repeat,
+            linear-gradient(var(--azul), var(--azul)) 100% 0 / 22px 2px no-repeat,
+            linear-gradient(var(--azul), var(--azul)) 100% 0 / 2px 22px no-repeat,
+            linear-gradient(var(--azul), var(--azul)) 0 100% / 22px 2px no-repeat,
+            linear-gradient(var(--azul), var(--azul)) 0 100% / 2px 22px no-repeat,
+            linear-gradient(var(--azul), var(--azul)) 100% 100% / 22px 2px no-repeat,
+            linear-gradient(var(--azul), var(--azul)) 100% 100% / 2px 22px no-repeat;
+    }
+
+    #motivo {
+        padding-top: 22px;
+        font-size: 13px;
+    }
+
+    #palco:has(#digitacao:not([hidden])) #pergunta {
+        min-height: 200px;
+        font-size: clamp(110px, 13vw, 170px);
+    }
+
+    #pergunta {
+        min-height: 230px;
+        font-size: clamp(120px, 14vw, 180px);
+    }
+
+    #significado {
+        padding-bottom: 24px;
+        font-size: 17px;
+    }
+
+    .opcao {
+        font-size: 30px;
+        min-height: 82px;
+        max-width: 190px;
+    }
+
+    .opcao.kana {
+        font-size: 52px;
+        min-height: 112px;
+    }
+
+    #telas {
+        max-width: 900px;
+    }
+
+    #resumo {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
+    }
+
+    #resumo>.cartao:first-child,
+    #resumo>.cartao:nth-child(2) {
+        grid-column: 1 / -1;
+    }
+
+    .abas .aba {
+        font-size: 14px;
+    }
+
+    .linhas {
+        grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+    }
+
+    #detalhe {
+        padding-bottom: 14px;
+    }
+}
+
+/* a partir daqui o cabeçalho vira uma coluna à esquerda e o palco respira */
+@media (min-width: 1100px) {
+    body {
+        display: grid;
+        grid-template-columns: 268px minmax(0, 1fr);
+        grid-template-rows: auto 1fr;
+        column-gap: 48px;
+        padding: 0 48px 56px 0;
+    }
+
+    body {
+        padding-bottom: 56px;
+    }
+
+    #masthead {
+        grid-column: 1;
+        grid-row: 1 / -1;
+        position: sticky;
+        top: 0;
+        align-self: start;
+        height: 100vh;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        gap: 0;
+        padding: 40px 28px 28px;
+        border-bottom: 0;
+        box-shadow: inset -6px 0 0 var(--azul);
+    }
+
+    .marca {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    #masthead h1 {
+        font-size: 44px;
+        line-height: .95;
+        max-width: 5ch;
+    }
+
+    .marca-jp {
+        font-size: 16px;
+    }
+
+    .topo-direita {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 18px;
+        margin-top: 40px;
+    }
+
+    #placar {
+        font-size: 30px;
+        padding: 8px 14px 6px;
+    }
+
+    .tema {
+        font-size: 13px;
+        padding: 9px 14px 7px;
+    }
+
+    /* a marca d'água vertical, como a lombada de um cartaz */
+    #masthead::after {
+        content: "ひらがな・カタカナ";
+        margin-top: auto;
+        max-height: 40vh;
+        overflow: hidden;
+        font-family: var(--kana);
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: .3em;
+        writing-mode: vertical-rl;
+        color: var(--azul);
+        opacity: .6;
+    }
+
+    /* as abas saem do rodapé e sobem para o trilho, logo abaixo da marca */
+    #abas-app {
+        position: fixed;
+        top: 176px;
+        left: 28px;
+        right: auto;
+        bottom: auto;
+        width: 212px;
+        z-index: 60;
+        flex-direction: column;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        background: none;
+        box-shadow: none;
+    }
+
+    .aba-app {
+        flex: none;
+        text-align: left;
+        padding: 11px 14px;
+        font-size: 16px;
+        border-color: var(--topo-texto);
+    }
+
+    /* o placar e o tema descem para o pé do trilho */
+    .topo-direita {
+        margin-top: auto;
+    }
+
+    #masthead::after {
+        margin-top: 26px;
+    }
+
+    #telas {
+        grid-column: 2;
+        grid-row: 1 / -1;
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    #palco {
+        width: 100%;
+        max-width: none;
+        margin: 48px 0 0;
+        min-height: min(660px, calc(100svh - 150px));
+    }
+
+    .capa,
+    #sessao-barra,
+    .tela>.titulo-tela:first-child,
+    #tela-progresso>.abas {
+        margin-top: 48px;
+    }
+
+    .modos,
+    .tamanhos {
+        max-width: 520px;
+    }
+
+    #fim {
+        margin-top: 48px;
+    }
+}

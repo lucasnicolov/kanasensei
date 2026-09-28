@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#14161C">
+    <title>Kana Sensei</title>
+
+    <link rel="icon" href="icone-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="icone-192.png" sizes="192x192" type="image/png">
+    <link rel="apple-touch-icon" href="icone-180.png">
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Kana Sensei">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap">
+    <link rel="stylesheet" href="estilo.css">
+
+    <script>
+        // o tema roda antes da pagina pintar, senao da um flash branco
+        (function () {
+            const CHAVE_TEMA = "kana-sensei-tema-v1";
+            const CICLO = ["auto", "claro", "escuro"];
+            const NOMES = { auto: "Auto", claro: "Dia", escuro: "Noite" };
+            const raiz = document.documentElement;
+            const sistema = window.matchMedia("(prefers-color-scheme: dark)");
+
+            let tema = localStorage.getItem(CHAVE_TEMA) || "auto";
+
+            function aplicar() {
+                const visual = tema === "auto"
+                    ? (sistema.matches ? "escuro" : "claro")
+                    : tema;
+
+                raiz.dataset.tema = tema;
+                raiz.dataset.visual = visual;
+
+                const cor = document.querySelector('meta[name="theme-color"]');
+
+                if (cor !== null) {
+                    cor.setAttribute("content", visual === "escuro" ? "#05060A" : "#14161C");
+                }
+
+                const botao = document.getElementById("tema");
+
+                if (botao !== null) {
+                    botao.textContent = NOMES[tema];
+                    botao.title = "Tema: " + NOMES[tema].toLowerCase();
+                }
+
+                // o quadro de desenhar é canvas: precisa ser repintado na mão
+                if (typeof esquecerCores === "function") {
+                    esquecerCores();
+                    redesenharQuadro();
+                }
+            }
+
+            aplicar();
+            sistema.addEventListener("change", aplicar);
+
+            document.addEventListener("DOMContentLoaded", function () {
+                aplicar();
+
+                document.getElementById("tema").addEventListener("click", function () {
+                    tema = CICLO[(CICLO.indexOf(tema) + 1) % CICLO.length];
+                    localStorage.setItem(CHAVE_TEMA, tema);
+                    aplicar();
+                });
+            });
+        })();
+    </script>
+</head>
+
+<body>
+    <header id="masthead">
+        <div class="marca">
+            <h1>Kana Sensei</h1>
+            <span class="marca-jp">カナ先生</span>
+        </div>
+        <div class="topo-direita">
+            <div id="placar"></div>
+            <button id="tema" class="tema" aria-label="Mudar o tema">Auto</button>
+        </div>
+    </header>
+
+    <nav id="abas-app" aria-label="Telas do app">
+        <button class="aba-app agora" data-tela="aprender">Aprender</button>
+        <button class="aba-app" data-tela="praticar">Praticar</button>
+        <button class="aba-app" data-tela="progresso">Progresso</button>
+    </nav>
+
+    <div id="telas">
+
+        <!-- ========== APRENDER ========== -->
+        <section id="tela-aprender" class="tela">
+
+            <div id="inicio"></div>
+
+            <div id="sessao-barra" hidden>
+                <div class="sessao-trilho"><span id="sessao-cheio"></span></div>
+                <div class="sessao-linha">
+                    <span id="sessao-conta"></span>
+                    <button class="sessao-parar" id="parar-sessao">Encerrar</button>
+                </div>
+            </div>
+
+            <main id="palco" hidden>
+                <div id="foco-ativo" hidden></div>
+
+                <div id="motivo"></div>
+                <div id="pergunta"></div>
+                <div id="significado"></div>
+
+                <div id="apresentacao" hidden></div>
+
+                <div id="fita" hidden></div>
+                <div id="bandeja" hidden></div>
+
+                <div id="opcoes"></div>
+
+                <div id="digitacao" hidden>
+                    <input id="entrada" type="text" autocomplete="off" autocorrect="off" autocapitalize="off"
+                        spellcheck="false" enterkeyhint="go" placeholder="romaji" aria-label="Escreva o som em romaji">
+                    <button class="acao principal" id="verificar">Verificar</button>
+                </div>
+
+                <div id="ajuda-fita" hidden>
+                    <span class="dica" id="dica-fita"></span>
+                    <button class="acao" id="desisto">Não sei</button>
+                </div>
+
+                <div id="desenho" hidden>
+                    <canvas id="quadro" width="300" height="300"></canvas>
+                    <div id="acoes-desenho">
+                        <button class="acao" id="limpar">Limpar</button>
+                        <button class="acao" id="naosei">Não sei</button>
+                    </div>
+                </div>
+
+                <div id="resposta"></div>
+            </main>
+
+            <div id="fim" hidden></div>
+        </section>
+
+        <!-- ========== PRATICAR ========== -->
+        <section id="tela-praticar" class="tela" hidden>
+            <h2 class="titulo-tela">Escolher o que praticar</h2>
+            <div id="foco-controles"></div>
+
+            <h2 class="titulo-tela">Meus textos</h2>
+            <div id="textos-conteudo"></div>
+        </section>
+
+        <!-- ========== PROGRESSO ========== -->
+        <section id="tela-progresso" class="tela" hidden>
+            <div id="abas" class="abas">
+                <button class="aba agora" data-aba="resumo">Resumo</button>
+                <button class="aba" data-aba="mapa">Mapa</button>
+                <button class="aba" data-aba="dados">Dados</button>
+            </div>
+
+            <div id="resumo"></div>
+
+            <div id="mapa" hidden>
+                <div id="fichas"></div>
+                <div id="detalhe"></div>
+            </div>
+
+            <div id="dados" hidden></div>
+
+            <details id="backup">
+                <summary>Backup</summary>
+                <div id="backup-conteudo"></div>
+            </details>
+
+            <button id="apagar">Apagar progresso</button>
+        </section>
+
+    </div>
+
+    <script src="caminhos.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
