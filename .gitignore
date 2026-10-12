@@ -1,0 +1,9 @@
+# a chave da API não pode ir para o GitHub
+.elevenlabs.json
+
+# o backup é só seu
+backup/
+
+.DS_Store
+node_modules/
+falhas.json
