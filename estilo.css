@@ -2154,6 +2154,23 @@ body.na-capa {
     color: var(--cinza);
 }
 
+/* o recado de que as gravações estão no ar: é uma boa notícia, aparece */
+.nota-gravacoes {
+    margin: 0 0 14px;
+    padding: 10px 12px;
+    border-left: 3px solid var(--azul);
+    background: var(--papel-2);
+    color: var(--tinta);
+}
+
+.nota-gravacoes code {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    padding: 1px 4px;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--tinta) 10%, transparent);
+}
+
 .fila {
     display: flex;
     gap: 8px;

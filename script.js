@@ -747,6 +747,193 @@ function viajar(horas) {
     mostrarPainel();
 }
 
+// ===== AS GRAVAÇÕES =====
+
+// Os áudios gravados ficam numa pasta ao lado do index.html:
+//
+//   audio/som/ka.mp3       um por som  (か e カ usam o mesmo)
+//   audio/palavra/neko.mp3 um por palavra
+//
+// Quando o arquivo existe, ele toca. Quando não existe, a voz do
+// sistema assume — é o caso dos seus textos colados, que ninguém gravou.
+
+const PASTA_DE_AUDIO = "audio";
+const EXTENSOES = ["mp3", "m4a"];
+const MAXIMO_EM_PARTES = 8;
+const PAUSA_ENTRE_GRAVACOES = 380;
+
+// o navegador só sabe se o arquivo existe depois de tentar: guardamos a resposta
+const gravacoes = {};
+let temGravacoes = false;
+let tocandoAgora = null;
+
+// quando não existe pasta de áudio nenhuma, nem vale procurar: cada procura
+// custa duas idas ao servidor e atrasaria o som depois de cada resposta
+let pastaDeAudio = "talvez";
+
+function enderecoDoSom(kana) {
+    const caractere = porKana(kana);
+
+    return caractere === null ? null : PASTA_DE_AUDIO + "/som/" + caractere.som;
+}
+
+function enderecoDaPalavra(texto) {
+    const palavra = PALAVRAS.find(p => p.kana === texto);
+
+    return palavra === undefined
+        ? null
+        : PASTA_DE_AUDIO + "/palavra/" + kanaParaRomaji(texto);
+}
+
+function enderecoDe(texto) {
+    return enderecoDoSom(texto) || enderecoDaPalavra(texto);
+}
+
+// procura o arquivo em cada extensão até achar um que o navegador aceite
+function procurarGravacao(base) {
+    if (gravacoes[base] !== undefined) {
+        return Promise.resolve(gravacoes[base]);
+    }
+
+    if (pastaDeAudio === "nao") {
+        return Promise.resolve(null);
+    }
+
+    let tentativa = Promise.resolve(null);
+
+    for (const extensao of EXTENSOES) {
+        tentativa = tentativa.then(function (achado) {
+            if (achado !== null) {
+                return achado;
+            }
+
+            return new Promise(function (resolver) {
+                const audio = new Audio(base + "." + extensao);
+
+                audio.preload = "auto";
+                audio.addEventListener("canplaythrough", () => resolver(audio), { once: true });
+                audio.addEventListener("error", () => resolver(null), { once: true });
+            });
+        });
+    }
+
+    return tentativa.then(function (achado) {
+        gravacoes[base] = achado;
+
+        if (achado !== null) {
+            temGravacoes = true;
+        }
+
+        return achado;
+    });
+}
+
+function pararGravacao() {
+    if (tocandoAgora !== null) {
+        tocandoAgora.pause();
+        tocandoAgora = null;
+    }
+}
+
+// toca o arquivo e avisa no fim. devolve false quando não deu para tocar,
+// e aí quem chamou cai na voz do sistema.
+function tocarGravacao(base, aoTerminar) {
+    return procurarGravacao(base).then(function (modelo) {
+        if (modelo === null) {
+            return false;
+        }
+
+        pararGravacao();
+
+        // um clone por vez: o mesmo elemento tocado duas vezes se atropela
+        const audio = modelo.cloneNode();
+
+        tocandoAgora = audio;
+
+        if (aoTerminar !== undefined) {
+            audio.addEventListener("ended", aoTerminar, { once: true });
+            audio.addEventListener("error", aoTerminar, { once: true });
+        }
+
+        return audio.play().then(() => true).catch(function () {
+            // o navegador pode recusar som antes do primeiro toque na tela
+            return false;
+        });
+    });
+}
+
+function tocarEmSequencia(kanas, pausa, aoTerminar) {
+    let i = 0;
+
+    function proximaParte() {
+        if (i >= kanas.length) {
+            if (aoTerminar !== undefined) {
+                aoTerminar();
+            }
+
+            return;
+        }
+
+        const base = enderecoDoSom(kanas[i]);
+        const seguir = function () {
+            i = i + 1;
+            setTimeout(proximaParte, pausa);
+        };
+
+        if (base === null) {
+            seguir();
+            return;
+        }
+
+        tocarGravacao(base, seguir).then(function (tocou) {
+            if (!tocou) {
+                seguir();
+            }
+        });
+    }
+
+    proximaParte();
+}
+
+// uma sequência curta pode ser montada juntando as gravações de cada kana
+function podeMontarComGravacoes(texto) {
+    const kanas = dividirEmKanas(texto);
+
+    if (kanas.length < 2 || kanas.length > MAXIMO_EM_PARTES) {
+        return null;
+    }
+
+    for (const kana of kanas) {
+        const base = enderecoDoSom(kana);
+
+        if (base === null || gravacoes[base] === undefined || gravacoes[base] === null) {
+            return null;
+        }
+    }
+
+    return kanas;
+}
+
+// na abertura, descobre se existe pasta de áudio e aquece os sons soltos
+function prepararGravacoes() {
+    const sons = CARACTERES.filter(c => c.silabario === "h")
+        .map(c => PASTA_DE_AUDIO + "/som/" + c.som);
+
+    return procurarGravacao(sons[0]).then(function (achado) {
+        if (achado === null) {
+            pastaDeAudio = "nao";
+            return;
+        }
+
+        pastaDeAudio = "sim";
+
+        // achou a pasta: carrega o resto em segundo plano, sem travar nada
+        for (const base of sons) {
+            procurarGravacao(base);
+        }
+    });
+}
+
 // ===== O SOM =====
 
 let vozJaponesa = null;
@@ -834,11 +1021,36 @@ function usarVoz(nome) {
 }
 
 function temVoz() {
-    return vozJaponesa !== null;
+    return vozJaponesa !== null || temGravacoes;
 }
 
 function falar(texto, velocidade, aoTerminar) {
-    if (!temVoz()) {
+    const base = enderecoDe(texto);
+
+    if (base !== null) {
+        tocarGravacao(base, aoTerminar).then(function (tocou) {
+            if (!tocou) {
+                falarComOSistema(texto, velocidade, aoTerminar);
+            }
+        });
+
+        return;
+    }
+
+    // sem arquivo próprio: se for curta e todos os kanas estiverem gravados,
+    // monta a leitura juntando um áudio atrás do outro
+    const partes = podeMontarComGravacoes(texto);
+
+    if (partes !== null) {
+        tocarEmSequencia(partes, PAUSA_ENTRE_GRAVACOES, aoTerminar);
+        return;
+    }
+
+    falarComOSistema(texto, velocidade, aoTerminar);
+}
+
+function falarComOSistema(texto, velocidade, aoTerminar) {
+    if (vozJaponesa === null) {
         if (aoTerminar !== undefined) {
             aoTerminar();
         }
@@ -846,6 +1058,7 @@ function falar(texto, velocidade, aoTerminar) {
         return;
     }
 
+    pararGravacao();
     window.speechSynthesis.cancel();
 
     const fala = new SpeechSynthesisUtterance(texto);
@@ -869,6 +1082,23 @@ function tetoDaFala(texto) {
 
 function falarEmPartes(kanas) {
     if (!temVoz()) {
+        return;
+    }
+
+    // no ditado cada kana é um pedaço: as gravações servem direto
+    const todosGravados = kanas.every(function (kana) {
+        const base = enderecoDoSom(kana);
+
+        return base !== null && gravacoes[base] !== undefined && gravacoes[base] !== null;
+    });
+
+    if (todosGravados) {
+        tocarEmSequencia(kanas, PAUSA_ENTRE_KANAS, undefined);
+        return;
+    }
+
+    // tem gravações, mas não destas: sem voz de sistema não há o que fazer
+    if (vozJaponesa === null) {
         return;
     }
 
@@ -4079,9 +4309,20 @@ function mostrarBarraDoFoco() {
 function mostrarVoz() {
     const nomes = listarVozes();
 
+    // quando as gravações estão no ar, a voz do sistema vira reserva
+    const aviso = temGravacoes
+        ? '<p class="nota nota-gravacoes">As gravações da pasta <code>audio</code>'
+        + ' estão sendo usadas: os sons e as palavras saem na voz gravada, um kana'
+        + ' atrás do outro nas sequências. A voz do sistema abaixo só entra no que'
+        + ' não tem gravação — os textos que você colar, por exemplo.</p>'
+        : '';
+
     if (nomes.length === 0) {
-        areaVoz.innerHTML = '<p class="nota">Este aparelho não tem nenhuma voz japonesa'
-            + ' instalada, então os exercícios de ouvir ficam de fora.</p>';
+        areaVoz.innerHTML = aviso + '<p class="nota">Este aparelho não tem nenhuma voz'
+            + ' japonesa instalada'
+            + (temGravacoes
+                ? ', então só os textos colados ficam sem som.'
+                : ', então os exercícios de ouvir ficam de fora.') + '</p>';
         return;
     }
 
@@ -4094,7 +4335,7 @@ function mostrarVoz() {
             + nome + (ehVozBoa({ name: nome }) ? " ✦" : "") + '</option>';
     }
 
-    areaVoz.innerHTML = '<div class="voz-linha">'
+    areaVoz.innerHTML = aviso + '<div class="voz-linha">'
         + '<label>Voz japonesa<select id="voz-escolha">' + opcoes + '</select></label>'
         + '<button class="acao" id="voz-testar">Ouvir</button>'
         + '</div>'
@@ -5492,12 +5733,24 @@ window.speechSynthesis.onvoiceschanged = function () {
     mostrarVoz();
 };
 
+// iOS só deixa tocar som depois de um toque na tela: o primeiro clique destrava
 document.addEventListener("click", function () {
-    falar(" ");
+    falarComOSistema(" ");
+
+    const base = enderecoDoSom("あ");
+
+    if (base !== null && gravacoes[base]) {
+        gravacoes[base].play().then(function () {
+            gravacoes[base].pause();
+            gravacoes[base].currentTime = 0;
+        }).catch(function () { /* sem problema: tocará no próximo toque */ });
+    }
 }, { once: true });
 
 carregar();
 carregarPreferencia();
+// a procura é assíncrona: quando ela termina, a tela da voz muda de recado
+prepararGravacoes().then(mostrarVoz);
 montarControlesDoFoco();
 mostrarVoz();
 mostrarTextos();
