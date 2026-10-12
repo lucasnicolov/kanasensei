@@ -3371,6 +3371,10 @@ let sessao = null;
 
 let telaAtual = "aprender";
 
+// a capa é o momento de abrir o app. vale por sessão do navegador:
+// trocar de aba e voltar não traz ela de novo.
+let capaVista = false;
+
 function carregarPreferencia() {
     const guardado = localStorage.getItem(CHAVE_SESSAO);
 
@@ -3591,7 +3595,7 @@ function mostrarFim() {
     }
 
     corpo += '<div class="fim-acoes">'
-        + '<button class="acao principal" id="de-novo">Estudar mais</button>'
+        + '<button class="acao principal" id="de-novo">Nova sessão</button>'
         + '<button class="acao" id="ver-progresso">Ver progresso</button>'
         + '</div>';
 
@@ -3657,6 +3661,7 @@ const areaFim = document.getElementById("fim");
 const areaSessao = document.getElementById("sessao-barra");
 const areaSessaoCheio = document.getElementById("sessao-cheio");
 const areaSessaoConta = document.getElementById("sessao-conta");
+const areaCapa = document.getElementById("capa");
 
 botaoVerificar.addEventListener("click", () => {
     if (respondido) {
@@ -3870,6 +3875,25 @@ areaAbasApp.addEventListener("click", (evento) => {
     }
 });
 
+function abrirCapa() {
+    areaCapa.hidden = false;
+    document.body.classList.add("na-capa");
+}
+
+function fecharCapa() {
+    if (capaVista) {
+        return;
+    }
+
+    capaVista = true;
+    areaCapa.hidden = true;
+    document.body.classList.remove("na-capa");
+    mostrarTelaDeAprender();
+}
+
+// a capa inteira é o botão: ninguém precisa mirar
+areaCapa.addEventListener("click", fecharCapa);
+
 areaInicio.addEventListener("click", (evento) => {
     const botao = evento.target.closest("button");
 
@@ -3905,7 +3929,9 @@ areaFim.addEventListener("click", (evento) => {
     }
 
     if (botao.id === "de-novo") {
-        comecarSessao();
+        // volta para a escolha: o modo e o tamanho podem mudar entre uma sessão e outra
+        sessao = null;
+        mostrarTelaDeAprender();
     } else if (botao.id === "ver-progresso") {
         mostrarTela("progresso");
     }
@@ -5336,6 +5362,7 @@ montarControlesDoFoco();
 mostrarTextos();
 mostrarBackup();
 mostrarTela("aprender");
+abrirCapa();
 
 setInterval(mostrarPainel, 10000);
 

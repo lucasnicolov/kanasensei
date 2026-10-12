@@ -94,6 +94,21 @@
         <button class="aba-app" data-tela="progresso">Progresso</button>
     </nav>
 
+    <!-- a capa só aparece quando o app abre; o script a liga.
+         começa escondida de propósito: se o js falhar, ninguém fica preso nela. -->
+    <div id="capa" hidden>
+        <div class="capa-fundo" aria-hidden="true">
+            <span class="capa-kana">かな</span>
+        </div>
+        <div class="capa-miolo">
+            <span class="capa-selo">ひらがな・カタカナ</span>
+            <h2 class="capa-marca">Kana<br>Sensei</h2>
+            <p class="capa-sub">Os dois silabários japoneses, na velocidade da sua memória.</p>
+            <button class="acao principal capa-botao" id="entrar">Começar</button>
+            <span class="capa-dica">ou toque em qualquer lugar</span>
+        </div>
+    </div>
+
     <div id="telas">
 
         <!-- ========== APRENDER ========== -->
