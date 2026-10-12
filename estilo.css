@@ -67,33 +67,33 @@
 }
 
 html[data-visual="escuro"] {
-    --papel: #0E1017;
-    --papel-2: #181B26;
-    --papel-3: #232735;
+        --papel: #0E1017;
+        --papel-2: #181B26;
+        --papel-3: #232735;
 
-    --tinta: #F1EFE6;
-    --azul: #6A82FF;
-    --azul-claro: #3A4894;
-    --azul-fundo: #1E2750;
-    --azul-escuro: #B9C4FF;
-    --vermelho: #FF6B4E;
-    --vermelho-fundo: #43190F;
+        --tinta: #F1EFE6;
+        --azul: #6A82FF;
+        --azul-claro: #3A4894;
+        --azul-fundo: #1E2750;
+        --azul-escuro: #B9C4FF;
+        --vermelho: #FF6B4E;
+        --vermelho-fundo: #43190F;
 
-    --cinza: #9A9C93;
-    --cinza-claro: #63665F;
+        --cinza: #9A9C93;
+        --cinza-claro: #63665F;
 
-    --chapa: #2233AE;
-    --chapa-texto: #EFEDE4;
-    --chapa-sub: #9BA8F8;
-    --chapa-erro: #B5301A;
-    --chapa-erro-sub: #F3AD9B;
+        --chapa: #2233AE;
+        --chapa-texto: #EFEDE4;
+        --chapa-sub: #9BA8F8;
+        --chapa-erro: #B5301A;
+        --chapa-erro-sub: #F3AD9B;
 
-    --sombra-cor: #000;
-    --topo-fundo: #05060A;
-    --topo-texto: #EFEDE4;
+        --sombra-cor: #000;
+        --topo-fundo: #05060A;
+        --topo-texto: #EFEDE4;
 
-    --traco-grade: #3A3F52;
-    --traco-ajuda: #414C7E;
+        --traco-grade: #3A3F52;
+        --traco-ajuda: #414C7E;
 }
 
 /* ========== BASE ========== */
@@ -328,7 +328,7 @@ h1 {
     mask-image: linear-gradient(to bottom, transparent 30%, #000 105%);
 }
 
-#pergunta>* {
+#pergunta > * {
     position: relative;
 }
 
@@ -364,42 +364,17 @@ h1 {
 /* ---- o carimbo de certo e de errado ---- */
 
 @keyframes carimbar {
-    0% {
-        opacity: 0;
-        transform: scale(2.1) rotate(-14deg);
-    }
-
-    55% {
-        opacity: 1;
-        transform: scale(.92) rotate(-7deg);
-    }
-
-    70% {
-        transform: scale(1.04) rotate(-9deg);
-    }
-
-    100% {
-        opacity: 1;
-        transform: scale(1) rotate(-8deg);
-    }
+    0%   { opacity: 0; transform: scale(2.1) rotate(-14deg); }
+    55%  { opacity: 1; transform: scale(.92) rotate(-7deg); }
+    70%  { transform: scale(1.04) rotate(-9deg); }
+    100% { opacity: 1; transform: scale(1) rotate(-8deg); }
 }
 
 @keyframes desalinhar {
-    0% {
-        transform: translate(5px, -4px);
-    }
-
-    28% {
-        transform: translate(-4px, 3px);
-    }
-
-    55% {
-        transform: translate(2px, -1px);
-    }
-
-    100% {
-        transform: translate(0, 0);
-    }
+    0%   { transform: translate(5px, -4px); }
+    28%  { transform: translate(-4px, 3px); }
+    55%  { transform: translate(2px, -1px); }
+    100% { transform: translate(0, 0); }
 }
 
 /* no erro a chapa inteira vira vermelha: não dá para não ver */
@@ -442,7 +417,6 @@ h1 {
 
 
 @media (prefers-reduced-motion: reduce) {
-
     #palco.acertou #pergunta,
     #palco.errou #pergunta,
     #palco.acertou #pergunta::after,
@@ -557,6 +531,63 @@ h1 {
 
 #verificar {
     min-width: 200px;
+}
+
+/* ---- o modo desenho ----
+   o quadro tem 300px fixos e precisa caber inteiro na tela, com os botões.
+   a chapa encolhe ao mínimo: aqui ela só mostra duas letras de romaji. */
+#palco:has(#desenho:not([hidden])) {
+    min-height: 0;
+}
+
+#palco:has(#desenho:not([hidden])) #opcoes,
+#palco:has(#desenho:not([hidden])) #desenho,
+#palco:has(#desenho:not([hidden])) #resposta {
+    margin-top: 0;
+}
+
+#palco:has(#desenho:not([hidden])) #motivo {
+    padding-top: 10px;
+    padding-bottom: 0;
+    min-height: 26px;
+    font-size: 11px;
+}
+
+#palco:has(#desenho:not([hidden])) #pergunta {
+    min-height: 0;
+    padding-top: 2px;
+    padding-bottom: 10px;
+}
+
+#palco:has(#desenho:not([hidden])) #pergunta.romaji {
+    font-size: clamp(42px, 13vw, 68px);
+}
+
+#palco:has(#desenho:not([hidden])) #pergunta::before {
+    inset: -20px 0 0;
+}
+
+#palco:has(#desenho:not([hidden])) #significado {
+    min-height: 0;
+    padding-bottom: 0;
+    margin-bottom: 14px;
+}
+
+#palco:has(#desenho:not([hidden])) #resposta {
+    padding-top: 12px;
+    min-height: 40px;
+}
+
+#palco:has(#desenho:not([hidden])) #desenho {
+    gap: 12px;
+}
+
+/* o carimbo também encolhe, senão cobre o romaji inteiro */
+#palco:has(#desenho:not([hidden])).acertou #pergunta::after,
+#palco:has(#desenho:not([hidden])).errou #pergunta::after {
+    width: 54px;
+    height: 54px;
+    top: 2px;
 }
 
 /* ---- o modo teclado ----
@@ -939,27 +970,13 @@ h1 {
 /* ========== A CAPA ========== */
 
 @keyframes subir {
-    from {
-        opacity: 0;
-        transform: translateY(16px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes crescer {
-    from {
-        opacity: 0;
-        transform: scale(1.12);
-    }
-
-    to {
-        opacity: .16;
-        transform: scale(1);
-    }
+    from { opacity: 0; transform: scale(1.12); }
+    to   { opacity: .16; transform: scale(1); }
 }
 
 body.na-capa {
@@ -1024,7 +1041,7 @@ body.na-capa {
     padding: 0 24px calc(44px + env(safe-area-inset-bottom));
 }
 
-.capa-miolo>* {
+.capa-miolo > * {
     animation: subir .5s cubic-bezier(.2, .8, .3, 1) both;
 }
 
@@ -1085,9 +1102,8 @@ body.na-capa {
 }
 
 @media (prefers-reduced-motion: reduce) {
-
     .capa-kana,
-    .capa-miolo>* {
+    .capa-miolo > * {
         animation-duration: .01ms;
     }
 
@@ -1217,7 +1233,7 @@ body.na-capa {
     mask-image: linear-gradient(to bottom, transparent 15%, #000 70%, transparent 88%);
 }
 
-.capa>* {
+.capa > * {
     position: relative;
 }
 
@@ -1481,7 +1497,7 @@ body.na-capa {
     color: var(--azul-claro);
 }
 
-#backup>*:not(summary) {
+#backup > *:not(summary) {
     padding-left: 16px;
     padding-right: 16px;
 }
@@ -1552,6 +1568,45 @@ body.na-capa {
     align-items: center;
     justify-content: center;
     text-align: center;
+}
+
+/* ========== A VOZ ========== */
+
+.voz-linha {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.voz-linha label {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--cinza);
+}
+
+.voz-linha select {
+    font-family: var(--texto);
+    font-size: 15px;
+    font-weight: 600;
+    width: 100%;
+    padding: 10px;
+    min-height: 46px;
+    color: var(--tinta);
+    background: var(--papel);
+    border: var(--borda) solid var(--tinta);
+    border-radius: var(--raio);
+}
+
+.voz-linha .acao {
+    flex-shrink: 0;
 }
 
 /* ========== MEUS TEXTOS ========== */
@@ -1751,15 +1806,11 @@ body.na-capa {
 /* ========== A APRESENTAÇÃO DE CARACTERE NOVO ========== */
 
 @keyframes tracar {
-    to {
-        stroke-dashoffset: 0;
-    }
+    to { stroke-dashoffset: 0; }
 }
 
 @keyframes aparecer {
-    to {
-        opacity: 1;
-    }
+    to { opacity: 1; }
 }
 
 #apresentacao {
@@ -2519,12 +2570,12 @@ body.na-capa {
     font-family: var(--texto);
 }
 
-.silabario>.nivel-cabeca {
+.silabario > .nivel-cabeca {
     background: var(--papel-2);
     box-shadow: 4px 4px 0 var(--sombra-cor);
 }
 
-.silabario.aberto>.nivel-cabeca {
+.silabario.aberto > .nivel-cabeca {
     color: var(--papel-2);
     background: var(--tinta);
     border-radius: var(--raio) var(--raio) 0 0;
@@ -2540,7 +2591,7 @@ body.na-capa {
     color: var(--azul);
 }
 
-.silabario.aberto>.nivel-cabeca .nivel-seta {
+.silabario.aberto > .nivel-cabeca .nivel-seta {
     color: var(--azul-claro);
 }
 
@@ -2563,7 +2614,7 @@ body.na-capa {
     opacity: .6;
 }
 
-.conjunto>.nivel-cabeca {
+.conjunto > .nivel-cabeca {
     padding: 10px 12px;
 }
 
@@ -2802,6 +2853,19 @@ body.na-capa {
         font-size: clamp(110px, 13vw, 170px);
     }
 
+    #palco:has(#desenho:not([hidden])) #pergunta {
+        padding-bottom: 18px;
+    }
+
+    #palco:has(#desenho:not([hidden])) #pergunta.romaji {
+        font-size: clamp(64px, 9vw, 110px);
+    }
+
+    #quadro {
+        width: 360px;
+        height: 360px;
+    }
+
     #pergunta {
         min-height: 230px;
         font-size: clamp(120px, 14vw, 180px);
@@ -2833,8 +2897,8 @@ body.na-capa {
         align-items: start;
     }
 
-    #resumo>.cartao:first-child,
-    #resumo>.cartao:nth-child(2) {
+    #resumo > .cartao:first-child,
+    #resumo > .cartao:nth-child(2) {
         grid-column: 1 / -1;
     }
 
@@ -2981,8 +3045,8 @@ body.na-capa {
 
     .capa,
     #sessao-barra,
-    .tela>.titulo-tela:first-child,
-    #tela-progresso>.abas {
+    .tela > .titulo-tela:first-child,
+    #tela-progresso > .abas {
         margin-top: 48px;
     }
 

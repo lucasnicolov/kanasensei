@@ -424,6 +424,9 @@ const QUANTOS_CANDIDATOS = 5;
 const DIRECOES = ["ler", "escrever", "ouvir", "desenhar"];
 const PRIORIDADE_DIRECAO_NOVA = 0.5;
 const VELOCIDADE_FALA = 0.8;
+const VELOCIDADE_DEVOLUTIVA = 0.6;
+const PAUSA_DEPOIS_DA_FALA = 500;
+const MS_POR_KANA = 750;
 
 const TOLERANCIA_FORMA = 16;
 const TOLERANCIA_POSICAO = 22;
@@ -748,11 +751,61 @@ function viajar(horas) {
 
 let vozJaponesa = null;
 
+const CHAVE_VOZ = "kana-sensei-voz-v1";
+
 const VOZES_PREFERIDAS = ["Google 日本語", "Kyoko", "O-ren", "Otoya", "Hattori", "Nanami", "Haruka"];
 
-function escolherVoz() {
-    const japonesas = window.speechSynthesis.getVoices().filter(voz => voz.lang.startsWith("ja"));
+// as vozes boas do sistema trazem estas palavras no nome. as outras são as
+// "compactas", que vêm instaladas de fábrica e soam metálicas.
+const MARCAS_DE_QUALIDADE = ["Premium", "Enhanced", "Neural", "Siri"];
 
+function vozesJaponesas() {
+    return window.speechSynthesis.getVoices().filter(voz => voz.lang.startsWith("ja"));
+}
+
+function ehVozBoa(voz) {
+    return MARCAS_DE_QUALIDADE.some(marca => voz.name.includes(marca));
+}
+
+function escolherVoz() {
+    const japonesas = vozesJaponesas();
+
+    if (japonesas.length === 0) {
+        vozJaponesa = null;
+        return;
+    }
+
+    // 1. a que o aluno escolheu à mão neste aparelho
+    const guardada = localStorage.getItem(CHAVE_VOZ);
+
+    if (guardada !== null) {
+        const dele = japonesas.find(voz => voz.name === guardada);
+
+        if (dele !== undefined) {
+            vozJaponesa = dele;
+            return;
+        }
+    }
+
+    // 2. uma versão boa de alguma das preferidas
+    for (const nome of VOZES_PREFERIDAS) {
+        const boa = japonesas.find(voz => voz.name.includes(nome) && ehVozBoa(voz));
+
+        if (boa !== undefined) {
+            vozJaponesa = boa;
+            return;
+        }
+    }
+
+    // 3. qualquer voz boa
+    const qualquerBoa = japonesas.find(ehVozBoa);
+
+    if (qualquerBoa !== undefined) {
+        vozJaponesa = qualquerBoa;
+        return;
+    }
+
+    // 4. as preferidas, mesmo na versão compacta
     for (const nome of VOZES_PREFERIDAS) {
         const achada = japonesas.find(voz => voz.name.includes(nome));
 
@@ -762,21 +815,19 @@ function escolherVoz() {
         }
     }
 
-    vozJaponesa = japonesas[0] || null;
+    vozJaponesa = japonesas[0];
 }
 
 function listarVozes() {
-    return window.speechSynthesis.getVoices()
-        .filter(voz => voz.lang.startsWith("ja"))
-        .map(voz => voz.name);
+    return vozesJaponesas().map(voz => voz.name);
 }
 
 function usarVoz(nome) {
-    const achada = window.speechSynthesis.getVoices().find(voz => voz.name.includes(nome));
+    const achada = vozesJaponesas().find(voz => voz.name === nome);
 
     if (achada !== undefined) {
         vozJaponesa = achada;
-        falar("こんにちは");
+        localStorage.setItem(CHAVE_VOZ, nome);
     }
 
     return vozJaponesa === null ? null : vozJaponesa.name;
@@ -786,8 +837,12 @@ function temVoz() {
     return vozJaponesa !== null;
 }
 
-function falar(texto, velocidade) {
+function falar(texto, velocidade, aoTerminar) {
     if (!temVoz()) {
+        if (aoTerminar !== undefined) {
+            aoTerminar();
+        }
+
         return;
     }
 
@@ -798,7 +853,18 @@ function falar(texto, velocidade) {
     fala.lang = "ja-JP";
     fala.rate = velocidade === undefined ? VELOCIDADE_FALA : velocidade;
 
+    if (aoTerminar !== undefined) {
+        fala.onend = aoTerminar;
+        fala.onerror = aoTerminar;
+    }
+
     window.speechSynthesis.speak(fala);
+}
+
+// quanto tempo a leitura de um texto deve demorar, no pior caso.
+// serve de rede: em alguns navegadores o onend simplesmente não vem.
+function tetoDaFala(texto) {
+    return PAUSA_ACERTO_COM_SOM + dividirEmKanas(texto).length * MS_POR_KANA;
 }
 
 function falarEmPartes(kanas) {
@@ -1596,12 +1662,12 @@ function irParaOExercicio() {
 // não basta acumular acertos numa habilidade só.
 
 const ESCADA = [
-    { id: "reconhecer", nome: "Reconhecer", ler: 0, escrever: 0, ouvir: 0 },
-    { id: "identificar", nome: "Identificar", ler: 2, escrever: 0, ouvir: 0 },
-    { id: "digitar", nome: "Digitar o som", ler: 3, escrever: 1, ouvir: 0 },
-    { id: "ouvir", nome: "Ouvir", ler: 4, escrever: 1, ouvir: 0 },
-    { id: "tracar", nome: "Traçar", ler: 5, escrever: 2, ouvir: 1 },
-    { id: "contexto", nome: "Palavras", ler: 6, escrever: 2, ouvir: 1 }
+    { id: "reconhecer",  nome: "Reconhecer",     ler: 0, escrever: 0, ouvir: 0 },
+    { id: "identificar", nome: "Identificar",    ler: 2, escrever: 0, ouvir: 0 },
+    { id: "digitar",     nome: "Digitar o som",  ler: 3, escrever: 1, ouvir: 0 },
+    { id: "ouvir",       nome: "Ouvir",          ler: 4, escrever: 1, ouvir: 0 },
+    { id: "tracar",      nome: "Traçar",         ler: 5, escrever: 2, ouvir: 1 },
+    { id: "contexto",    nome: "Palavras",       ler: 6, escrever: 2, ouvir: 1 }
 ];
 
 function acertosEm(caractere, direcao) {
@@ -3662,6 +3728,7 @@ const areaSessao = document.getElementById("sessao-barra");
 const areaSessaoCheio = document.getElementById("sessao-cheio");
 const areaSessaoConta = document.getElementById("sessao-conta");
 const areaCapa = document.getElementById("capa");
+const areaVoz = document.getElementById("voz-controles");
 
 botaoVerificar.addEventListener("click", () => {
     if (respondido) {
@@ -3921,6 +3988,19 @@ areaInicio.addEventListener("click", (evento) => {
     }
 });
 
+areaVoz.addEventListener("change", (evento) => {
+    if (evento.target.id === "voz-escolha") {
+        usarVoz(evento.target.value);
+        falar("こんにちは、はじめまして");
+    }
+});
+
+areaVoz.addEventListener("click", (evento) => {
+    if (evento.target.closest("#voz-testar") !== null) {
+        falar("こんにちは、はじめまして");
+    }
+});
+
 areaFim.addEventListener("click", (evento) => {
     const botao = evento.target.closest("button");
 
@@ -3994,6 +4074,35 @@ function mostrarBarraDoFoco() {
         + '<span class="foco-texto">' + descricaoDoFoco() + '</span>'
         + '<span class="foco-conta">' + vistos + ' de ' + lista.length + '</span>'
         + '<button id="foco-sair" class="foco-x" title="Voltar ao automático">✕</button>';
+}
+
+function mostrarVoz() {
+    const nomes = listarVozes();
+
+    if (nomes.length === 0) {
+        areaVoz.innerHTML = '<p class="nota">Este aparelho não tem nenhuma voz japonesa'
+            + ' instalada, então os exercícios de ouvir ficam de fora.</p>';
+        return;
+    }
+
+    let opcoes = "";
+
+    for (const nome of nomes) {
+        const atual = vozJaponesa !== null && vozJaponesa.name === nome;
+
+        opcoes += '<option value="' + nome + '"' + (atual ? " selected" : "") + '>'
+            + nome + (ehVozBoa({ name: nome }) ? " ✦" : "") + '</option>';
+    }
+
+    areaVoz.innerHTML = '<div class="voz-linha">'
+        + '<label>Voz japonesa<select id="voz-escolha">' + opcoes + '</select></label>'
+        + '<button class="acao" id="voz-testar">Ouvir</button>'
+        + '</div>'
+        + '<p class="nota">As vozes marcadas com ✦ são as de alta qualidade.'
+        + ' Se nenhuma aparecer marcada, dá para baixar uma de graça:'
+        + ' no iPhone em Ajustes → Acessibilidade → Conteúdo Falado → Vozes → Japonês,'
+        + ' e no Mac em Ajustes do Sistema → Acessibilidade → Conteúdo Falado'
+        + ' → Voz do sistema → Gerenciar vozes. A diferença é grande.</p>';
 }
 
 function mostrarTextos() {
@@ -5285,8 +5394,31 @@ function responder(acertou, escolhido) {
 
     if (acertou) {
         areaResposta.textContent = "Isso!";
-        setTimeout(() => falar(textoFalado), 120);
-        temporizador = setTimeout(proximo, temVoz() ? PAUSA_ACERTO_COM_SOM : PAUSA_ACERTO);
+
+        if (!temVoz()) {
+            temporizador = setTimeout(proximo, PAUSA_ACERTO);
+        } else {
+            // a próxima pergunta só entra depois que a voz terminar de ler.
+            // antes era um tempo fixo, e ele cortava as sequências no meio.
+            let jaSeguiu = false;
+
+            const seguir = function () {
+                if (jaSeguiu) {
+                    return;
+                }
+
+                jaSeguiu = true;
+                clearTimeout(temporizador);
+                temporizador = setTimeout(proximo, PAUSA_DEPOIS_DA_FALA);
+            };
+
+            const devagar = dividirEmKanas(textoFalado).length > 1;
+
+            temporizador = setTimeout(seguir, tetoDaFala(textoFalado));
+            setTimeout(function () {
+                falar(textoFalado, devagar ? VELOCIDADE_DEVOLUTIVA : VELOCIDADE_FALA, seguir);
+            }, 120);
+        }
     } else {
         const certa = respostaCerta();
 
@@ -5294,7 +5426,11 @@ function responder(acertou, escolhido) {
             areaResposta.textContent = certa;
         }
 
-        setTimeout(() => falar(textoFalado), 250);
+        setTimeout(function () {
+            const devagar = dividirEmKanas(textoFalado).length > 1;
+
+            falar(textoFalado, devagar ? VELOCIDADE_DEVOLUTIVA : VELOCIDADE_FALA);
+        }, 250);
 
         const dica = escolhido ? dicaPara(exercicio.correto.kana, escolhido.kana) : null;
 
@@ -5350,7 +5486,11 @@ document.addEventListener("keydown", (evento) => {
 // ===== INÍCIO =====
 
 escolherVoz();
-window.speechSynthesis.onvoiceschanged = escolherVoz;
+
+window.speechSynthesis.onvoiceschanged = function () {
+    escolherVoz();
+    mostrarVoz();
+};
 
 document.addEventListener("click", function () {
     falar(" ");
@@ -5359,6 +5499,7 @@ document.addEventListener("click", function () {
 carregar();
 carregarPreferencia();
 montarControlesDoFoco();
+mostrarVoz();
 mostrarTextos();
 mostrarBackup();
 mostrarTela("aprender");
