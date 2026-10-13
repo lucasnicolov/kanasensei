@@ -771,6 +771,31 @@ let tocandoAgora = null;
 // custa duas idas ao servidor e atrasaria o som depois de cada resposta
 let pastaDeAudio = "talvez";
 
+// o aluno pode desligar as gravações sem tirar a pasta do ar — serve para
+// enquanto algumas ainda estão sendo refeitas
+const CHAVE_GRAVACOES = "kana-sensei-gravacoes-v1";
+
+let usarGravacoes = localStorage.getItem(CHAVE_GRAVACOES) === "sim";
+
+function gravacaoPronta(base) {
+    return usarGravacoes && base !== null
+        && gravacoes[base] !== undefined && gravacoes[base] !== null;
+}
+
+function usarAsGravacoes(ligado) {
+    usarGravacoes = ligado;
+    localStorage.setItem(CHAVE_GRAVACOES, ligado ? "sim" : "nao");
+    pararGravacao();
+
+    if (!ligado) {
+        temGravacoes = false;
+        mostrarVoz();
+        return;
+    }
+
+    prepararGravacoes().then(mostrarVoz);
+}
+
 function enderecoDoSom(kana) {
     const caractere = porKana(kana);
 
@@ -791,6 +816,10 @@ function enderecoDe(texto) {
 
 // procura o arquivo em cada extensão até achar um que o navegador aceite
 function procurarGravacao(base) {
+    if (!usarGravacoes) {
+        return Promise.resolve(null);
+    }
+
     if (gravacoes[base] !== undefined) {
         return Promise.resolve(gravacoes[base]);
     }
@@ -904,9 +933,7 @@ function podeMontarComGravacoes(texto) {
     }
 
     for (const kana of kanas) {
-        const base = enderecoDoSom(kana);
-
-        if (base === null || gravacoes[base] === undefined || gravacoes[base] === null) {
+        if (!gravacaoPronta(enderecoDoSom(kana))) {
             return null;
         }
     }
@@ -916,6 +943,10 @@ function podeMontarComGravacoes(texto) {
 
 // na abertura, descobre se existe pasta de áudio e aquece os sons soltos
 function prepararGravacoes() {
+    if (!usarGravacoes) {
+        return Promise.resolve();
+    }
+
     const sons = CARACTERES.filter(c => c.silabario === "h")
         .map(c => PASTA_DE_AUDIO + "/som/" + c.som);
 
@@ -926,6 +957,7 @@ function prepararGravacoes() {
         }
 
         pastaDeAudio = "sim";
+        temGravacoes = true;
 
         // achou a pasta: carrega o resto em segundo plano, sem travar nada
         for (const base of sons) {
@@ -1021,7 +1053,7 @@ function usarVoz(nome) {
 }
 
 function temVoz() {
-    return vozJaponesa !== null || temGravacoes;
+    return vozJaponesa !== null || (usarGravacoes && temGravacoes);
 }
 
 function falar(texto, velocidade, aoTerminar) {
@@ -1086,11 +1118,7 @@ function falarEmPartes(kanas) {
     }
 
     // no ditado cada kana é um pedaço: as gravações servem direto
-    const todosGravados = kanas.every(function (kana) {
-        const base = enderecoDoSom(kana);
-
-        return base !== null && gravacoes[base] !== undefined && gravacoes[base] !== null;
-    });
+    const todosGravados = kanas.every(kana => gravacaoPronta(enderecoDoSom(kana)));
 
     if (todosGravados) {
         tocarEmSequencia(kanas, PAUSA_ENTRE_KANAS, undefined);
@@ -4222,6 +4250,8 @@ areaVoz.addEventListener("change", (evento) => {
     if (evento.target.id === "voz-escolha") {
         usarVoz(evento.target.value);
         falar("こんにちは、はじめまして");
+    } else if (evento.target.id === "usar-gravacoes") {
+        usarAsGravacoes(evento.target.checked);
     }
 });
 
@@ -4309,13 +4339,32 @@ function mostrarBarraDoFoco() {
 function mostrarVoz() {
     const nomes = listarVozes();
 
-    // quando as gravações estão no ar, a voz do sistema vira reserva
-    const aviso = temGravacoes
-        ? '<p class="nota nota-gravacoes">As gravações da pasta <code>audio</code>'
-        + ' estão sendo usadas: os sons e as palavras saem na voz gravada, um kana'
-        + ' atrás do outro nas sequências. A voz do sistema abaixo só entra no que'
-        + ' não tem gravação — os textos que você colar, por exemplo.</p>'
-        : '';
+    // a chave fica sempre à mostra: dá para desligar as gravações sem
+    // mexer na pasta, enquanto algumas ainda estão sendo refeitas
+    const chave = '<label class="chave">'
+        + '<input type="checkbox" id="usar-gravacoes"'
+        + (usarGravacoes ? " checked" : "") + '>'
+        + '<span class="chave-trilho"><span class="chave-bola"></span></span>'
+        + '<span class="chave-texto">Usar as gravações da pasta <code>audio</code></span>'
+        + '</label>';
+
+    let recado;
+
+    if (!usarGravacoes) {
+        recado = '<p class="nota">Com a chave desligada, tudo sai na voz do sistema,'
+            + ' mesmo que a pasta <code>audio</code> esteja no ar.</p>';
+    } else if (temGravacoes) {
+        // com as gravações no ar, a voz do sistema vira reserva
+        recado = '<p class="nota nota-gravacoes">As gravações estão sendo usadas:'
+            + ' os sons e as palavras saem na voz gravada, um kana atrás do outro'
+            + ' nas sequências. A voz do sistema abaixo só entra no que não tem'
+            + ' gravação — os textos que você colar, por exemplo.</p>';
+    } else {
+        recado = '<p class="nota">Não achei a pasta <code>audio</code> aqui do lado'
+            + ' do app, então tudo está saindo na voz do sistema.</p>';
+    }
+
+    const aviso = chave + recado;
 
     if (nomes.length === 0) {
         areaVoz.innerHTML = aviso + '<p class="nota">Este aparelho não tem nenhuma voz'

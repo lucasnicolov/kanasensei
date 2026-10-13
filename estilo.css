@@ -2154,6 +2154,81 @@ body.na-capa {
     color: var(--cinza);
 }
 
+/* a chave liga/desliga das gravações */
+.chave {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 14px 0 10px;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+/* o quadradinho de verdade fica escondido atrás do trilho, mas continua
+   sendo ele que o teclado e o leitor de tela enxergam */
+.chave input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 52px;
+    height: 30px;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.chave-trilho {
+    flex-shrink: 0;
+    position: relative;
+    width: 52px;
+    height: 30px;
+    background: var(--papel);
+    border: var(--borda) solid var(--tinta);
+    border-radius: 999px;
+    transition: background .12s;
+}
+
+.chave-bola {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    background: var(--tinta);
+    border-radius: 50%;
+    transition: transform .12s, background .12s;
+}
+
+.chave input:checked + .chave-trilho {
+    background: var(--azul);
+}
+
+.chave input:checked + .chave-trilho .chave-bola {
+    background: var(--papel-2);
+    transform: translateX(22px);
+}
+
+.chave input:focus-visible + .chave-trilho {
+    outline: 3px solid var(--azul);
+    outline-offset: 3px;
+}
+
+.chave-texto {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--tinta);
+}
+
+.chave-texto code {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    padding: 1px 4px;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--tinta) 10%, transparent);
+}
+
 /* o recado de que as gravações estão no ar: é uma boa notícia, aparece */
 .nota-gravacoes {
     margin: 0 0 14px;
