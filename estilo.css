@@ -3985,3 +3985,521 @@ html[data-visual="claro"] .tema {
         opacity: .34;
     }
 }
+
+/* =========================================================
+   AJUSTES DE DIAGRAMAÇÃO
+   ========================================================= */
+
+/* ---------- a tela de abertura: duas peças, não uma colada ----------
+   antes a saudação e a escolha eram um cartão partido ao meio, e o
+   canto arredondado de cima passava por cima da borda de baixo */
+
+#inicio {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.capa {
+    margin-top: 20px;
+    margin-bottom: 0;
+    padding: 26px 22px 28px;
+    gap: 10px;
+    color: #F6F4ED;
+    background: var(--azul);
+    border: none;
+    border-radius: var(--raio-g);
+}
+
+.capa-jp {
+    font-family: var(--kana);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .3em;
+    color: #BBD0FF;
+}
+
+.capa-titulo {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(30px, 8.4vw, 40px);
+    line-height: 1.02;
+    letter-spacing: -.02em;
+    text-transform: uppercase;
+    color: #F6F4ED;
+}
+
+.capa-estado {
+    align-self: flex-start;
+    margin-top: 4px;
+    padding: 8px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.5;
+    color: #0E1424;
+    background: var(--lima);
+    border-radius: var(--raio-pil);
+}
+
+.escolha {
+    margin-top: 0;
+    padding: 22px;
+    background: var(--papel-2);
+    border: none;
+    border-radius: var(--raio-g);
+    box-shadow: none;
+}
+
+.escolha h3 {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    color: var(--cinza);
+}
+
+/* nas telas estreitas as pílulas de tamanho não cabem lado a lado */
+.modos,
+.tamanhos {
+    flex-wrap: wrap;
+}
+
+.modos .pilula,
+.tamanhos .pilula {
+    min-height: 46px;
+    padding: 0 10px;
+}
+
+@media (max-width: 359px) {
+    .modos {
+        flex-direction: column;
+    }
+}
+
+/* ---------- a capa no Mac: texto à esquerda, gato à direita ---------- */
+
+@media (min-width: 900px) {
+    #capa {
+        justify-content: center;
+    }
+
+    .capa-fundo {
+        inset: 0 0 0 auto;
+        width: 46%;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        transform: none;
+    }
+
+    .capa-fundo .gato {
+        width: min(33vw, 440px);
+        margin-bottom: 0;
+    }
+
+    .capa-miolo {
+        max-width: 52%;
+        padding: 0 0 0 clamp(48px, 7vw, 120px);
+        gap: 14px;
+    }
+
+    .capa-dica {
+        align-self: flex-start;
+    }
+}
+
+/* ---------- o trilho do Mac ----------
+   o overflow-x do body virava um container de rolagem e matava o
+   position:sticky do cabeçalho: ele subia e descolava das abas */
+
+@media (min-width: 1100px) {
+    /* o sticky não segurava: dentro do grid o trilho escorregava junto
+       com a página e descolava das abas, que são fixas. fixo resolve. */
+    body {
+        display: block;
+        overflow-x: visible;
+        padding: 0 48px 72px 316px;
+    }
+
+    #masthead {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 60;
+        width: 268px;
+        height: 100vh;
+        overflow: hidden;
+        box-shadow: inset -3px 0 0 var(--lima);
+    }
+
+    #telas {
+        margin: 0;
+        padding: 0;
+        max-width: 920px;
+        min-height: 100vh;
+    }
+
+    /* a marca d'água não pode empurrar o resto para fora do trilho */
+    #masthead::after {
+        max-height: 30vh;
+        flex-shrink: 1;
+        min-height: 0;
+    }
+}
+
+/* =========================================================
+   OS GRÁFICOS
+   Instrumento: anéis para as taxas, medidores em tijolinhos
+   para as barras, e a fita dos dias com o hoje destacado.
+   ========================================================= */
+
+/* ---------- o anel ---------- */
+
+.aro {
+    position: relative;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.aro .anel {
+    display: block;
+}
+
+.anel-trilho {
+    fill: none;
+    stroke: var(--papel-3);
+    stroke-width: 7;
+}
+
+.anel-valor {
+    fill: none;
+    stroke: var(--lima);
+    stroke-width: 7;
+    stroke-linecap: round;
+}
+
+/* o número mora no meio do anel */
+.aro .grande,
+.aro .valor-aro {
+    position: absolute;
+    font-family: var(--display);
+    font-weight: 400;
+    letter-spacing: -.04em;
+    color: var(--tinta);
+}
+
+.aro .grande {
+    font-size: 23px;
+}
+
+.aro-pequeno .anel-trilho,
+.aro-pequeno .anel-valor {
+    stroke-width: 5;
+}
+
+.aro-pequeno .valor-aro {
+    font-size: 15px;
+}
+
+.placar-grande {
+    align-items: center;
+}
+
+/* ---------- as habilidades: anel à esquerda, texto à direita ---------- */
+
+.habilidades {
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 18px 20px;
+}
+
+.habilidade {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.habilidade .cabeca {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 2px;
+    min-width: 0;
+}
+
+.habilidade .cabeca strong {
+    font-family: var(--texto);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--tinta);
+}
+
+.habilidade .cabeca small {
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--cinza);
+}
+
+/* ---------- os medidores viram tijolinhos ---------- */
+
+.trilho {
+    height: 10px;
+    background: var(--papel-3);
+    border: none;
+    border-radius: 0;
+    overflow: hidden;
+    -webkit-mask-image: repeating-linear-gradient(to right,
+        #000 0 calc(3.333% - 2px), transparent calc(3.333% - 2px) 3.333%);
+    mask-image: repeating-linear-gradient(to right,
+        #000 0 calc(3.333% - 2px), transparent calc(3.333% - 2px) 3.333%);
+}
+
+.trilho > span {
+    display: block;
+    height: 100%;
+    background: var(--azul);
+    border-radius: 0;
+}
+
+.trilho.escuro > span {
+    background: var(--lima);
+}
+
+/* a barra de estágios continua chapada: ali as cores é que informam */
+.barra {
+    height: 12px;
+    border-radius: var(--raio-pil);
+    overflow: hidden;
+    -webkit-mask-image: none;
+    mask-image: none;
+}
+
+/* ---------- a fita dos dias ---------- */
+
+.grafico {
+    width: 100%;
+    overflow: visible;
+}
+
+.barra-dia {
+    fill: var(--azul);
+    rx: 2;
+}
+
+/* o dia de hoje é o último: fica em lima para se achar na fita */
+.barra-dia:last-of-type {
+    fill: var(--lima);
+}
+
+.eixo {
+    stroke: var(--linha);
+    stroke-width: 1;
+}
+
+.eixo.tracejado {
+    stroke-dasharray: 3 5;
+    stroke: var(--cinza-claro);
+    opacity: .5;
+}
+
+.area-dominio {
+    fill: var(--rosa);
+    opacity: .12;
+}
+
+.linha-dominio {
+    fill: none;
+    stroke: var(--rosa);
+    stroke-width: 2.5;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+.ponto-dominio {
+    fill: var(--rosa);
+    rx: 1.5;
+}
+
+.rotulo-dia,
+.rotulo-eixo {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    fill: var(--cinza);
+}
+
+.rotulo-dia {
+    text-anchor: middle;
+}
+
+/* ---------- o ranking dos difíceis ---------- */
+
+.ranking .item {
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--linha);
+}
+
+.ranking .item:last-child {
+    border-bottom: none;
+}
+
+.ranking .kana {
+    font-family: var(--kana);
+    font-weight: 700;
+}
+
+.ranking .leitura {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .08em;
+    color: var(--cinza);
+}
+
+.ranking .valor {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    color: var(--rosa);
+}
+
+/* ---------- o medidor solto (textos, mapa) ---------- */
+
+.medidor {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    padding: 5px 10px;
+    color: #0E1424;
+    background: var(--lima);
+    border-radius: var(--raio-pil);
+}
+
+.medidor.vazio {
+    color: var(--cinza);
+    background: var(--papel-3);
+}
+
+/* ---------- tirar os contornos do desenho antigo das barras ---------- */
+
+.texto-item .trilho,
+.linha-cartao .trilho {
+    border: none;
+}
+
+.linha-cartao .trilho {
+    height: 6px;
+    -webkit-mask-image: none;
+    mask-image: none;
+    background: var(--papel-3);
+}
+
+.linha-cartao.intocada .trilho {
+    background: var(--papel-3);
+}
+
+.silabario {
+    padding: 16px;
+    background: var(--papel-3);
+    border: none;
+    border-radius: var(--raio);
+}
+
+/* ---------- o que era preto sobre papel ficou creme sobre escuro ----------
+   estes blocos invertiam a cor no desenho antigo; agora quem inverte é o lima */
+
+.silabario.aberto > .nivel-cabeca,
+#backup[open] summary {
+    color: #0E1424;
+    background: var(--lima);
+}
+
+.silabario.aberto > .nivel-cabeca .nivel-seta,
+#backup[open] summary::after {
+    color: #0E1424;
+}
+
+.silabario > .nivel-cabeca {
+    background: var(--papel-3);
+    box-shadow: none;
+}
+
+.linha-cartao {
+    border: none;
+    background: var(--papel-2);
+}
+
+.linha-cartao.aberta {
+    box-shadow: none;
+    outline: 2px solid var(--lima);
+}
+
+.linha-fichas {
+    background: var(--papel-3);
+    border-top: none;
+}
+
+.barra {
+    border: none;
+}
+
+/* o anel em zero não pode virar um pontinho solto */
+.anel-valor[stroke-dasharray^="0.0 "] {
+    stroke-linecap: butt;
+}
+
+/* ---------- varredura das bordas que sobraram ----------
+   no desenho antigo toda moldura era preta sobre papel. com a tinta
+   clara elas viraram contornos creme berrantes. aqui: ou somem, ou
+   ficam no fio discreto, ou viram acento. */
+
+.caixa,
+.novo-info,
+.texto-novo,
+.texto-novo textarea,
+.texto-item,
+.foco-linha select,
+.voz-linha select,
+.peca,
+#quadro,
+#foco-ativo,
+.novo-figura .kana-enorme,
+.tracado,
+.aviso {
+    border-color: var(--linha);
+}
+
+.nivel-cabeca,
+.nivel-corpo,
+.ponto {
+    border: none;
+}
+
+.ficha.escolhida {
+    border-color: var(--lima);
+}
+
+.selo-estudando,
+.etiqueta {
+    color: #0E1424;
+    background: var(--lima);
+    border: none;
+    border-radius: var(--raio-pil);
+}
+
+/* a barra de estágios: o trilho precisa aparecer sobre o cartão */
+.barra {
+    background: var(--papel);
+}
+
+/* o quadro de desenhar ganha o fundo do cartão, não o do papel */
+#quadro {
+    background: var(--papel-2);
+    border-radius: var(--raio);
+}

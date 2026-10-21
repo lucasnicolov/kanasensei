@@ -3687,8 +3687,17 @@ const TAMANHOS_DE_SESSAO = {
     tempo: [5, 10, 20]
 };
 
-// o que o aluno escolheu da última vez
-let preferencia = { modo: "perguntas", alvo: 20 };
+// o que o aluno escolheu da última vez.
+// "alvos" guarda o tamanho de cada modo separado: trocar de perguntas
+// para tempo e voltar não pode apagar o 10 que ele tinha escolhido.
+let preferencia = { modo: "perguntas", alvo: 20, alvos: { perguntas: 20, tempo: 10 } };
+
+function tamanhoLembrado(modo) {
+    const lista = TAMANHOS_DE_SESSAO[modo];
+    const guardado = preferencia.alvos === undefined ? undefined : preferencia.alvos[modo];
+
+    return lista.includes(guardado) ? guardado : lista[1];
+}
 
 // a sessão em andamento, ou null quando ele está na tela de abertura
 let sessao = null;
@@ -3712,6 +3721,13 @@ function carregarPreferencia() {
         if (TAMANHOS_DE_SESSAO[lido.modo] !== undefined
             && TAMANHOS_DE_SESSAO[lido.modo].includes(lido.alvo)) {
             preferencia = lido;
+
+            // preferência guardada antes de existir o "alvos"
+            if (preferencia.alvos === undefined) {
+                preferencia.alvos = {};
+            }
+
+            preferencia.alvos[preferencia.modo] = preferencia.alvo;
         }
     } catch (erro) {
         // preferência corrompida: fica o padrão
@@ -4228,7 +4244,7 @@ areaInicio.addEventListener("click", (evento) => {
 
     if (botao.dataset.modo !== undefined) {
         preferencia.modo = botao.dataset.modo;
-        preferencia.alvo = TAMANHOS_DE_SESSAO[preferencia.modo][1];
+        preferencia.alvo = tamanhoLembrado(preferencia.modo);
         salvarPreferencia();
         mostrarInicio();
         return;
@@ -4236,6 +4252,12 @@ areaInicio.addEventListener("click", (evento) => {
 
     if (botao.dataset.alvo !== undefined) {
         preferencia.alvo = Number(botao.dataset.alvo);
+
+        if (preferencia.alvos === undefined) {
+            preferencia.alvos = {};
+        }
+
+        preferencia.alvos[preferencia.modo] = preferencia.alvo;
         salvarPreferencia();
         mostrarInicio();
         return;
@@ -4678,6 +4700,23 @@ function resumoEmFrase() {
         + ' então ele cresce de verdade ao longo dos dias.</p>';
 }
 
+// um anel de progresso: a volta inteira é 100%.
+// o traço é desenhado com dasharray, então não precisa de animação nem canvas.
+function anelDeProgresso(parte, lado) {
+    const centro = lado / 2;
+    const raio = centro - 5;
+    const volta = 2 * Math.PI * raio;
+    const cheio = Math.max(0, Math.min(1, parte)) * volta;
+
+    return '<svg class="anel" viewBox="0 0 ' + lado + ' ' + lado + '"'
+        + ' width="' + lado + '" height="' + lado + '" aria-hidden="true">'
+        + '<circle class="anel-trilho" cx="' + centro + '" cy="' + centro + '" r="' + raio + '"/>'
+        + '<circle class="anel-valor" cx="' + centro + '" cy="' + centro + '" r="' + raio + '"'
+        + ' stroke-dasharray="' + cheio.toFixed(1) + ' ' + volta.toFixed(1) + '"'
+        + ' transform="rotate(-90 ' + centro + ' ' + centro + ')"/>'
+        + '</svg>';
+}
+
 function painelDoSilabario(silabario) {
     const lista = doSilabario(silabario.id);
     const conta = contarEstagios(lista.map(estagioDe));
@@ -4689,7 +4728,8 @@ function painelDoSilabario(silabario) {
         + '<div class="placar-grande">'
         + '<div><span class="titulo-kana">' + silabario.nome + '</span>'
         + '<span class="sub">' + silabario.rotulo + '</span></div>'
-        + '<strong class="grande">' + porcento(dominioDoConjunto(lista)) + '</strong>'
+        + '<div class="aro">' + anelDeProgresso(dominioDoConjunto(lista), 92)
+        + '<strong class="grande">' + porcento(dominioDoConjunto(lista)) + '</strong></div>'
         + '</div>'
         + barraDeEstagios(conta)
         + '<div class="legenda">'
@@ -4725,10 +4765,10 @@ function resumoPorDirecao() {
         const nome = HABILIDADES[direcao];
 
         corpo += '<div class="habilidade">'
+            + '<div class="aro aro-pequeno">' + anelDeProgresso(valor, 60)
+            + '<strong class="valor-aro">' + porcento(valor) + '</strong></div>'
             + '<div class="cabeca"><strong>' + nome.nome + '</strong>'
-            + '<span>' + porcento(valor) + '</span></div>'
-            + '<div class="trilho"><span style="width:' + Math.max(1, valor * 100) + '%"></span></div>'
-            + '<small>' + nome.descricao + '</small>'
+            + '<small>' + nome.descricao + '</small></div>'
             + '</div>';
     }
 
