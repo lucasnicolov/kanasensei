@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#14161C">
+    <meta name="theme-color" content="#0E1424">
     <title>Kana Sensei</title>
 
     <link rel="icon" href="icone-32.png" sizes="32x32" type="image/png">
@@ -18,7 +18,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap">
+        href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Archivo+Black&family=Space+Mono:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
     <link rel="stylesheet" href="estilo.css">
 
     <script>
@@ -43,7 +43,7 @@
                 const cor = document.querySelector('meta[name="theme-color"]');
 
                 if (cor !== null) {
-                    cor.setAttribute("content", visual === "escuro" ? "#05060A" : "#14161C");
+                    cor.setAttribute("content", visual === "escuro" ? "#0E1424" : "#F2EFE6");
                 }
 
                 const botao = document.getElementById("tema");
@@ -88,6 +88,9 @@
         </div>
     </header>
 
+    <!-- o gato acompanha o estudo: o css decide quando ele aparece e que cara faz -->
+    <div id="gato-espia" aria-hidden="true"><svg class="gato gato-espia" viewBox="0 0 200 180" aria-hidden="true"><polygon points="8,112 60,105 60,119" fill="var(--gato-corpo)" stroke="var(--gato-fio)" stroke-width="3" stroke-linejoin="round"/><polygon points="192,112 140,105 140,119" fill="var(--gato-corpo)" stroke="var(--gato-fio)" stroke-width="3" stroke-linejoin="round"/><polygon points="6,134 60,127 60,141" fill="var(--gato-corpo)" stroke="var(--gato-fio)" stroke-width="3" stroke-linejoin="round"/><polygon points="194,134 140,127 140,141" fill="var(--gato-corpo)" stroke="var(--gato-fio)" stroke-width="3" stroke-linejoin="round"/><polygon points="10,156 60,149 60,163" fill="var(--gato-corpo)" stroke="var(--gato-fio)" stroke-width="3" stroke-linejoin="round"/><polygon points="190,156 140,149 140,163" fill="var(--gato-corpo)" stroke="var(--gato-fio)" stroke-width="3" stroke-linejoin="round"/><path d="M40 4 L96 52 L104 52 L160 4 L168 96 C169 124 170 160 172 206 L28 206 C30 160 31 124 32 96 Z" fill="var(--gato-corpo)" stroke="var(--gato-fio)" stroke-width="4" stroke-linejoin="round"/><polygon points="52,30 62,80 88,60" fill="var(--gato-rosa)"/><polygon points="148,30 138,80 112,60" fill="var(--gato-rosa)"/><g class="cara cara-neutro"><path d="M45 86 L96 103 C100 121 85 131 67 128 C50 125 40 105 45 86 Z" fill="var(--gato-olho)"/><path d="M155 86 L104 103 C100 121 115 131 133 128 C150 125 160 105 155 86 Z" fill="var(--gato-olho)"/><path d="M79 97 C84 107 84 117 79 127 C74 118 74 106 79 97 Z" fill="var(--gato-corpo)"/><path d="M121 97 C126 107 126 117 121 127 C116 118 116 106 121 97 Z" fill="var(--gato-corpo)"/></g><g class="cara cara-olhando"><path d="M45 86 L96 103 C100 121 85 131 67 128 C50 125 40 105 45 86 Z" fill="var(--gato-olho)"/><path d="M155 86 L104 103 C100 121 115 131 133 128 C150 125 160 105 155 86 Z" fill="var(--gato-olho)"/><path d="M68 97 C73 107 73 117 68 127 C63 118 63 106 68 97 Z" fill="var(--gato-corpo)"/><path d="M110 97 C115 107 115 117 110 127 C105 118 105 106 110 97 Z" fill="var(--gato-corpo)"/></g><g class="cara cara-acertou"><path d="M52 114 Q71 86 90 110" fill="none" stroke="var(--gato-olho)" stroke-width="11" stroke-linecap="round"/><path d="M148 114 Q129 86 110 110" fill="none" stroke="var(--gato-olho)" stroke-width="11" stroke-linecap="round"/></g><g class="cara cara-errou"><path d="M54 92 L90 118 M90 92 L54 118" stroke="var(--gato-olho)" stroke-width="10" stroke-linecap="round"/><path d="M110 92 L146 118 M146 92 L110 118" stroke="var(--gato-olho)" stroke-width="10" stroke-linecap="round"/></g><polygon points="94,148 106,148 100,157" fill="var(--gato-rosa)"/></svg></div>
+
     <nav id="abas-app" aria-label="Telas do app">
         <button class="aba-app agora" data-tela="aprender">Aprender</button>
         <button class="aba-app" data-tela="praticar">Praticar</button>
@@ -98,11 +101,11 @@
          começa escondida de propósito: se o js falhar, ninguém fica preso nela. -->
     <div id="capa" hidden>
         <div class="capa-fundo" aria-hidden="true">
-            <span class="capa-kana">かな</span>
+            <svg class="gato gato-frente" viewBox="0 0 200 200" aria-hidden="true"><polygon points="8,106 64,99 64,113" fill="var(--gato-corpo)" stroke="var(--gato-fio)" stroke-width="3" stroke-linejoin="round"/><polygon points="192,106 136,99 136,113" fill="var(--gato-corpo)" stroke="var(--gato-fio)" stroke-width="3" stroke-linejoin="round"/><polygon points="6,126 64,119 64,133" fill="var(--gato-corpo)" stroke="var(--gato-fio)" stroke-width="3" stroke-linejoin="round"/><polygon points="194,126 136,119 136,133" fill="var(--gato-corpo)" stroke="var(--gato-fio)" stroke-width="3" stroke-linejoin="round"/><polygon points="10,146 64,139 64,153" fill="var(--gato-corpo)" stroke="var(--gato-fio)" stroke-width="3" stroke-linejoin="round"/><polygon points="190,146 136,139 136,153" fill="var(--gato-corpo)" stroke="var(--gato-fio)" stroke-width="3" stroke-linejoin="round"/><path d="M40 4 L96 52 L104 52 L160 4 L168 96 C168 140 138 176 100 176 C62 176 32 140 32 96 Z" fill="var(--gato-corpo)" stroke="var(--gato-fio)" stroke-width="4" stroke-linejoin="round"/><polygon points="52,30 62,80 88,60" fill="var(--gato-rosa)"/><polygon points="148,30 138,80 112,60" fill="var(--gato-rosa)"/><g class="cara cara-neutro"><path d="M45 86 L96 103 C100 121 85 131 67 128 C50 125 40 105 45 86 Z" fill="var(--gato-olho)"/><path d="M155 86 L104 103 C100 121 115 131 133 128 C150 125 160 105 155 86 Z" fill="var(--gato-olho)"/><path d="M79 97 C84 107 84 117 79 127 C74 118 74 106 79 97 Z" fill="var(--gato-corpo)"/><path d="M121 97 C126 107 126 117 121 127 C116 118 116 106 121 97 Z" fill="var(--gato-corpo)"/></g><g class="cara cara-olhando"><path d="M45 86 L96 103 C100 121 85 131 67 128 C50 125 40 105 45 86 Z" fill="var(--gato-olho)"/><path d="M155 86 L104 103 C100 121 115 131 133 128 C150 125 160 105 155 86 Z" fill="var(--gato-olho)"/><path d="M68 97 C73 107 73 117 68 127 C63 118 63 106 68 97 Z" fill="var(--gato-corpo)"/><path d="M110 97 C115 107 115 117 110 127 C105 118 105 106 110 97 Z" fill="var(--gato-corpo)"/></g><g class="cara cara-acertou"><path d="M52 114 Q71 86 90 110" fill="none" stroke="var(--gato-olho)" stroke-width="11" stroke-linecap="round"/><path d="M148 114 Q129 86 110 110" fill="none" stroke="var(--gato-olho)" stroke-width="11" stroke-linecap="round"/></g><g class="cara cara-errou"><path d="M54 92 L90 118 M90 92 L54 118" stroke="var(--gato-olho)" stroke-width="10" stroke-linecap="round"/><path d="M110 92 L146 118 M146 92 L110 118" stroke="var(--gato-olho)" stroke-width="10" stroke-linecap="round"/></g><g class="cara cara-bravo"><path d="M45 92 L96 107 C100 123 85 133 67 130 C50 127 40 111 45 92 Z" fill="var(--gato-olho)"/><path d="M155 92 L104 107 C100 123 115 133 133 130 C150 127 160 111 155 92 Z" fill="var(--gato-olho)"/><path d="M40 72 L99 104 L97 88 L43 62 Z" fill="var(--gato-corpo)"/><path d="M160 72 L101 104 L103 88 L157 62 Z" fill="var(--gato-corpo)"/></g><polygon points="94,133 106,133 100,142" fill="var(--gato-rosa)"/><g class="boca boca-fechada"><path d="M72 146 Q100 170 128 146 Q100 158 72 146 Z" fill="var(--gato-rosa)"/><polygon points="79,147 89,147 84,160" fill="var(--gato-fio)"/><polygon points="111,147 121,147 116,160" fill="var(--gato-fio)"/></g><g class="boca boca-aberta"><path d="M64 138 Q100 184 136 138 Q100 154 64 138 Z" fill="var(--gato-rosa)"/><polygon points="74,140 85,140 79,154" fill="var(--gato-fio)"/><polygon points="115,140 126,140 121,154" fill="var(--gato-fio)"/></g></svg>
         </div>
         <div class="capa-miolo">
             <span class="capa-selo">ひらがな・カタカナ</span>
-            <h2 class="capa-marca">Kana<br>Sensei</h2>
+            <h2 class="capa-marca">Kana<br><span class="eco">Sensei</span></h2>
             <p class="capa-sub">Os dois silabários japoneses, na velocidade da sua memória.</p>
             <button class="acao principal capa-botao" id="entrar">Começar</button>
             <span class="capa-dica">ou toque em qualquer lugar</span>

@@ -1,101 +1,107 @@
 /* =========================================================
-   KANA SENSEI — folha de estilo
-   Direção: riso / anime anos 90 moderno.
-   Azul de impressão sobre papel off-white, contorno preto,
-   sombra dura, meio-tom e grão.
+   KANA SENSEI — リソ
+   Risografia: azul de impressão, lima neon e rosa sobre tinta.
+   Cantos gordos, campos chapados, nenhuma sombra deslocada.
+   O gato é o mascote: de frente ele é a marca, espiando ele
+   acompanha o estudo.
    ========================================================= */
 
-/* ========== AS CORES E AS MEDIDAS ========== */
-
 :root {
-    /* papel */
-    --papel: #EFEDE4;
-    --papel-2: #FBFAF5;
-    --papel-3: #E4E1D6;
+    /* fundo */
+    --papel: #0E1424;
+    --papel-2: #161E33;
+    --papel-3: #1F2942;
 
     /* tintas */
-    --tinta: #14161C;
-    --azul: #2A3FE0;
-    --azul-claro: #8C9CF4;
-    --azul-fundo: #DFE3FF;
-    --azul-escuro: #131C6B;
-    --vermelho: #E03A20;
-    --vermelho-fundo: #FBDCD5;
+    --tinta: #F2EFE6;
+    --azul: #2E6FE8;
+    --azul-claro: #6098FA;
+    --azul-fundo: #1B2A4D;
+    --azul-escuro: #1B4EB3;
+    --lima: #D9F23C;
+    --rosa: #FF3B9A;
+    --vermelho: #FF3B9A;
+    --vermelho-fundo: #3A1026;
 
     /* apoio */
-    --cinza: #74776B;
-    --cinza-claro: #A7A99E;
-    --linha: var(--tinta);
+    --cinza: #99A2BA;
+    --cinza-claro: #5C6680;
+    --linha: #243151;
 
-    /* a chapa azul da pergunta */
-    --chapa: #2A3FE0;
-    --chapa-texto: #F3F1E8;
-    --chapa-sub: #93A1F6;
-    --chapa-erro: #DE3A20;
-    --chapa-erro-sub: #F9BFB1;
+    /* a chapa da pergunta */
+    --chapa: #2E6FE8;
+    --chapa-texto: #F6F4ED;
+    --chapa-sub: #BBD0FF;
+    --chapa-erro: #FF3B9A;
+    --chapa-erro-sub: #FFD9EC;
 
-    /* traços e sombras */
-    --sombra-cor: #14161C;
-    --borda: 2.5px;
-    --raio: 4px;
-    --sombra: 5px 5px 0 var(--sombra-cor);
-    --sombra-azul: 5px 5px 0 var(--azul);
-    --sombra-funda: 9px 9px 0 var(--sombra-cor);
+    /* traços */
+    --sombra-cor: transparent;
+    --borda: 2px;
+    --raio: 16px;
+    --raio-g: 28px;
+    --raio-pil: 999px;
+    --sombra: none;
+    --sombra-azul: none;
+    --sombra-funda: none;
 
-    /* o cabeçalho é escuro nos dois temas */
-    --topo-fundo: #14161C;
-    --topo-texto: #EFEDE4;
+    /* a barra de abas é escura nos dois temas */
+    --topo-fundo: #161E33;
+    --topo-texto: #F2EFE6;
 
     /* tipos */
-    --display: "Anton", "Archivo", Impact, system-ui, sans-serif;
+    --display: "Archivo Black", "Archivo", Impact, system-ui, sans-serif;
     --texto: "Archivo", system-ui, -apple-system, sans-serif;
     --kana: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+    --mono: "Space Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
-    /* o quadro de desenhar (canvas: o script lê estas cores) */
-    --traco-grade: #CFCCC0;
-    --traco-ajuda: #C2C8E8;
+    /* o gato */
+    --gato-corpo: #0B0F1C;
+    --gato-fio: #F2EFE6;
+    --gato-olho: #D9F23C;
+    --gato-rosa: #FF3B9A;
 
-    /* ícones */
+    /* o quadro de desenhar (o script lê estas cores) */
+    --traco-grade: #2A3350;
+    --traco-ajuda: #2B4A8E;
+
     --icone-som: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M2.6 9.2h4L11.4 4.6v14.8L6.6 14.8h-4z'/%3E%3Cpath d='M15.2 8.9a4.4 4.4 0 0 1 0 6.2' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round'/%3E%3Cpath d='M18.3 5.8a8.8 8.8 0 0 1 0 12.4' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round'/%3E%3C/svg%3E");
+    --icone-certo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3.4 12.6l5.6 5.6L20.6 6.6' fill='none' stroke='%23000' stroke-width='3.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    --icone-errado: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 5l14 14M19 5L5 19' fill='none' stroke='%23000' stroke-width='3.8' stroke-linecap='round'/%3E%3C/svg%3E");
 
-    --icone-certo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3.4 12.6l5.6 5.6L20.6 6.6' fill='none' stroke='%23000' stroke-width='4.2' stroke-linecap='square'/%3E%3C/svg%3E");
-    --icone-errado: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 5l14 14M19 5L5 19' fill='none' stroke='%23000' stroke-width='4.2' stroke-linecap='square'/%3E%3C/svg%3E");
-
-    /* texturas */
-    --meiotom: radial-gradient(var(--azul) 1.1px, transparent 1.3px);
-    --meiotom-tam: 7px 7px;
+    --meiotom: none;
+    --meiotom-tam: 8px 8px;
 }
 
-html[data-visual="escuro"] {
-        --papel: #0E1017;
-        --papel-2: #181B26;
-        --papel-3: #232735;
+/* ---- o dia: a mesma impressão, sobre papel ---- */
+html[data-visual="claro"] {
+    --papel: #F2EFE6;
+    --papel-2: #FBF9F2;
+    --papel-3: #E6E1D4;
 
-        --tinta: #F1EFE6;
-        --azul: #6A82FF;
-        --azul-claro: #3A4894;
-        --azul-fundo: #1E2750;
-        --azul-escuro: #B9C4FF;
-        --vermelho: #FF6B4E;
-        --vermelho-fundo: #43190F;
+    --tinta: #121624;
+    --azul: #2458D0;
+    --azul-claro: #1B4099;
+    --azul-fundo: #DCE5FA;
+    --azul-escuro: #14306F;
+    --lima: #C2DC1F;
+    --rosa: #E0217F;
+    --vermelho: #E0217F;
+    --vermelho-fundo: #FBDDEC;
 
-        --cinza: #9A9C93;
-        --cinza-claro: #63665F;
+    --cinza: #5F6678;
+    --cinza-claro: #9AA0AE;
+    --linha: #D8D3C4;
 
-        --chapa: #2233AE;
-        --chapa-texto: #EFEDE4;
-        --chapa-sub: #9BA8F8;
-        --chapa-erro: #B5301A;
-        --chapa-erro-sub: #F3AD9B;
+    --chapa: #2458D0;
+    --chapa-texto: #F8F6EF;
+    --chapa-sub: #BACDF6;
+    --chapa-erro: #E0217F;
+    --chapa-erro-sub: #FBD3E6;
 
-        --sombra-cor: #000;
-        --topo-fundo: #05060A;
-        --topo-texto: #EFEDE4;
-
-        --traco-grade: #3A3F52;
-        --traco-ajuda: #414C7E;
+    --traco-grade: #D5D0C1;
+    --traco-ajuda: #B9CAF0;
 }
-
 /* ========== BASE ========== */
 
 * {
@@ -246,7 +252,7 @@ h1 {
     background: var(--papel-2);
     border: var(--borda) solid var(--tinta);
     border-radius: var(--raio);
-    box-shadow: var(--sombra);
+    box-shadow: none;
 }
 
 /* na apresentação o cartão ocupa o palco inteiro, de borda a borda */
@@ -446,7 +452,7 @@ h1 {
     background: var(--papel-2);
     border: var(--borda) solid var(--tinta);
     border-radius: var(--raio);
-    box-shadow: var(--sombra);
+    box-shadow: none;
     cursor: pointer;
     touch-action: manipulation;
     user-select: none;
@@ -455,8 +461,8 @@ h1 {
 }
 
 .opcao:active {
-    transform: translate(4px, 4px);
-    box-shadow: 1px 1px 0 var(--sombra-cor);
+    transform: scale(.97);
+    box-shadow: none;
 }
 
 @media (hover: hover) {
@@ -477,7 +483,7 @@ h1 {
     color: var(--papel-2);
     background: var(--azul);
     border-color: var(--tinta);
-    box-shadow: var(--sombra);
+    box-shadow: none;
 }
 
 .opcao.errada {
@@ -498,7 +504,7 @@ h1 {
     background: var(--azul);
     border: var(--borda) solid var(--tinta);
     border-radius: 50%;
-    box-shadow: var(--sombra);
+    box-shadow: none;
     cursor: pointer;
     touch-action: manipulation;
     user-select: none;
@@ -517,8 +523,8 @@ h1 {
 }
 
 .som:active {
-    transform: translate(4px, 4px);
-    box-shadow: 1px 1px 0 var(--sombra-cor);
+    transform: scale(.97);
+    box-shadow: none;
 }
 
 #digitacao {
@@ -704,15 +710,15 @@ h1 {
     background: var(--papel-2);
     border: var(--borda) solid var(--tinta);
     border-radius: var(--raio);
-    box-shadow: 4px 4px 0 var(--sombra-cor);
+    box-shadow: none;
     cursor: pointer;
     touch-action: manipulation;
     transition: transform .06s, box-shadow .06s;
 }
 
 .acao:active {
-    transform: translate(3px, 3px);
-    box-shadow: 1px 1px 0 var(--sombra-cor);
+    transform: scale(.97);
+    box-shadow: none;
 }
 
 .acao.principal {
@@ -741,7 +747,7 @@ h1 {
     background: var(--papel-2);
     border: var(--borda) solid var(--tinta);
     border-radius: var(--raio);
-    box-shadow: var(--sombra);
+    box-shadow: none;
     touch-action: none;
     cursor: crosshair;
 }
@@ -779,7 +785,7 @@ h1 {
 .casa.agora {
     color: var(--papel-2);
     background: var(--azul);
-    box-shadow: 3px 3px 0 var(--sombra-cor);
+    box-shadow: none;
 }
 
 .casa.feita {
@@ -824,7 +830,7 @@ h1 {
 #fita.modo-montar .casa.feita {
     color: var(--papel-2);
     background: var(--azul);
-    box-shadow: 3px 3px 0 var(--sombra-cor);
+    box-shadow: none;
 }
 
 #ajuda-fita {
@@ -901,15 +907,15 @@ h1 {
     background: var(--papel-2);
     border: var(--borda) solid var(--tinta);
     border-radius: var(--raio);
-    box-shadow: 4px 4px 0 var(--sombra-cor);
+    box-shadow: none;
     cursor: pointer;
     touch-action: manipulation;
     transition: transform .07s, box-shadow .07s, background .1s;
 }
 
 .peca:active {
-    transform: translate(3px, 3px);
-    box-shadow: 1px 1px 0 var(--sombra-cor);
+    transform: scale(.97);
+    box-shadow: none;
 }
 
 .peca.recusada {
@@ -1273,7 +1279,7 @@ body.na-capa {
     border: var(--borda) solid var(--tinta);
     border-top: 0;
     border-radius: 0 0 var(--raio) var(--raio);
-    box-shadow: var(--sombra);
+    box-shadow: none;
 }
 
 .escolha h3 {
@@ -1313,13 +1319,13 @@ body.na-capa {
 }
 
 .pilula:active {
-    transform: translate(3px, 3px);
+    transform: scale(.97);
 }
 
 .pilula.agora {
     color: var(--papel-2);
     background: var(--azul);
-    box-shadow: 4px 4px 0 var(--sombra-cor);
+    box-shadow: none;
 }
 
 .pilula.modo {
@@ -1406,7 +1412,7 @@ body.na-capa {
     background: var(--papel-2);
     border: var(--borda) solid var(--tinta);
     border-radius: var(--raio);
-    box-shadow: var(--sombra);
+    box-shadow: none;
 }
 
 .fim-topo {
@@ -1459,7 +1465,7 @@ body.na-capa {
     background: var(--papel-2);
     border: var(--borda) solid var(--tinta);
     border-radius: var(--raio);
-    box-shadow: 4px 4px 0 var(--sombra-cor);
+    box-shadow: none;
 }
 
 #backup summary {
@@ -1620,7 +1626,7 @@ body.na-capa {
     background: var(--papel);
     border: var(--borda) solid var(--tinta);
     border-radius: var(--raio);
-    box-shadow: 4px 4px 0 var(--sombra-cor);
+    box-shadow: none;
 }
 
 .texto-novo-titulo {
@@ -1693,7 +1699,7 @@ body.na-capa {
 }
 
 .texto-item.estudando {
-    box-shadow: 5px 5px 0 var(--azul);
+    box-shadow: none;
 }
 
 .texto-item .trilho {
@@ -1852,7 +1858,7 @@ body.na-capa {
     background: var(--papel-2);
     border: var(--borda) solid var(--tinta);
     border-radius: var(--raio);
-    box-shadow: 7px 7px 0 var(--tinta);
+    box-shadow: none;
 }
 
 .novo-topo {
@@ -2539,7 +2545,7 @@ body.na-capa {
     background: var(--vermelho-fundo);
     border: var(--borda) solid var(--tinta);
     border-radius: var(--raio);
-    box-shadow: 4px 4px 0 var(--sombra-cor);
+    box-shadow: none;
     cursor: pointer;
 }
 
@@ -2582,7 +2588,7 @@ body.na-capa {
     color: var(--tinta);
     background: var(--azul-fundo);
     border-color: var(--tinta);
-    box-shadow: 3px 3px 0 var(--sombra-cor);
+    box-shadow: none;
 }
 
 /* ========== DOIS SILABÁRIOS ========== */
@@ -2632,7 +2638,7 @@ body.na-capa {
 .aba.agora {
     color: var(--papel-2);
     background: var(--azul);
-    box-shadow: 3px 3px 0 var(--sombra-cor);
+    box-shadow: none;
 }
 
 /* ========== O MAPA DOS CARACTERES ========== */
@@ -2664,7 +2670,7 @@ body.na-capa {
 
 .silabario > .nivel-cabeca {
     background: var(--papel-2);
-    box-shadow: 4px 4px 0 var(--sombra-cor);
+    box-shadow: none;
 }
 
 .silabario.aberto > .nivel-cabeca {
@@ -2740,7 +2746,7 @@ body.na-capa {
     border: var(--borda) solid var(--tinta);
     border-top: 0;
     border-radius: 0 0 var(--raio) var(--raio);
-    box-shadow: 4px 4px 0 var(--sombra-cor);
+    box-shadow: none;
 }
 
 .nivel-corpo .nivel:last-child {
@@ -2765,7 +2771,7 @@ body.na-capa {
 }
 
 .linha-cartao.aberta {
-    box-shadow: 4px 4px 0 var(--azul);
+    box-shadow: none;
 }
 
 .linha-cartao.intocada {
@@ -2915,7 +2921,7 @@ body.na-capa {
         max-width: 900px;
         margin-top: 34px;
         padding: 0 var(--pad) 34px;
-        box-shadow: var(--sombra-funda);
+        box-shadow: none;
     }
 
     /* marcas de corte, como uma prova de impressão */
@@ -3149,5 +3155,833 @@ body.na-capa {
 
     #fim {
         margin-top: 48px;
+    }
+}
+
+/* =========================================================
+   リソ — a camada de desenho
+   Tudo abaixo é o que diferencia esta versão da anterior.
+   ========================================================= */
+
+/* ---------- base ---------- */
+
+body::after {
+    opacity: .14;
+    mix-blend-mode: overlay;
+}
+
+html[data-visual="claro"] body::after {
+    opacity: .22;
+    mix-blend-mode: multiply;
+}
+
+::selection {
+    background: var(--lima);
+    color: var(--papel);
+}
+
+/* ---------- tipografia ---------- */
+
+h1 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 21px;
+    letter-spacing: -.02em;
+    text-transform: uppercase;
+    text-shadow: none;
+    color: var(--tinta);
+}
+
+.marca-jp {
+    font-family: var(--kana);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: .3em;
+    color: var(--lima);
+}
+
+html[data-visual="claro"] .marca-jp {
+    color: var(--rosa);
+}
+
+.titulo-tela {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 20px;
+    letter-spacing: -.01em;
+}
+
+/* o que é legenda, contador ou rótulo vira mono miúdo e espaçado */
+.rotulo,
+.foco-rotulo,
+.fim-rotulo,
+.capa-selo,
+.etiqueta,
+.legenda,
+.rotulo-eixo,
+.rotulo-dia,
+.texto-numeros,
+.nivel-nome,
+.capa-dica,
+#motivo,
+#sessao-conta {
+    font-family: var(--mono);
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+/* ---------- o cabeçalho: sem barra, só a marca sobre o fundo ---------- */
+
+#masthead {
+    align-items: center;
+    padding-bottom: 10px;
+    background: none;
+    background-image: none;
+    border-bottom: none;
+    box-shadow: none;
+    color: var(--tinta);
+}
+
+#placar {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    padding: 7px 14px 6px;
+    color: var(--papel);
+    background: var(--lima);
+    border-radius: var(--raio-pil);
+}
+
+.tema {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    padding: 7px 12px 6px;
+    min-width: 0;
+    color: var(--cinza);
+    background: var(--papel-2);
+    border: none;
+    border-radius: var(--raio-pil);
+}
+
+.tema:active {
+    color: var(--papel);
+    background: var(--lima);
+}
+
+/* ---------- o palco: sem cartão, o painel azul é que manda ---------- */
+
+#palco {
+    background: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding-left: 0;
+    padding-right: 0;
+    --pad: 0px;
+}
+
+#palco::before,
+#palco::after {
+    display: none;
+}
+
+/* ---------- a chapa: um painel azul de canto gordo ---------- */
+
+#motivo,
+#pergunta,
+#significado {
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 22px;
+    padding-right: 22px;
+    background: var(--chapa);
+    color: var(--chapa-texto);
+    transition: background .18s ease;
+}
+
+#motivo {
+    padding-top: 22px;
+    padding-bottom: 4px;
+    font-size: 9px;
+    letter-spacing: .18em;
+    color: var(--chapa-sub);
+    border-radius: var(--raio-g) var(--raio-g) 0 0;
+    border-bottom: none;
+}
+
+#motivo:has(+ #pergunta[hidden]) {
+    padding-bottom: 20px;
+    border-bottom: none;
+    border-radius: var(--raio-g);
+}
+
+#pergunta {
+    min-height: 210px;
+    font-weight: 900;
+}
+
+/* nada de meio-tom: o campo chapado já é a imagem */
+#pergunta::before {
+    display: none;
+}
+
+#pergunta.romaji {
+    font-family: var(--display);
+    font-weight: 400;
+    letter-spacing: -.03em;
+    text-transform: lowercase;
+}
+
+#significado {
+    padding-bottom: 24px;
+    margin-bottom: 26px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--chapa-sub);
+    border-bottom: none;
+    border-radius: 0 0 var(--raio-g) var(--raio-g);
+}
+
+/* o acerto acende o painel em lima; o erro vira rosa */
+#palco.acertou {
+    --chapa: var(--lima);
+    --chapa-texto: #0E1424;
+    --chapa-sub: #4A5520;
+}
+
+#palco.errou {
+    --chapa: var(--chapa-erro);
+    --chapa-sub: var(--chapa-erro-sub);
+    --chapa-texto: #FFFFFF;
+}
+
+/* o carimbo cai no canto do painel */
+#palco.acertou #pergunta::after,
+#palco.errou #pergunta::after {
+    top: 16px;
+    right: 18px;
+    width: clamp(40px, 11vw, 54px);
+    height: clamp(40px, 11vw, 54px);
+    background: var(--chapa-texto);
+}
+
+/* ---------- as opções: caixas gordas ---------- */
+
+.opcao {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 22px;
+    letter-spacing: 0;
+    min-height: 68px;
+    color: var(--tinta);
+    background: var(--papel-2);
+    border: var(--borda) solid var(--linha);
+    border-radius: var(--raio);
+    transition: background .12s, color .12s, border-color .12s, transform .08s;
+}
+
+.opcao.kana {
+    font-family: var(--kana);
+    font-weight: 700;
+}
+
+@media (hover: hover) {
+    .opcao:hover {
+        border-color: var(--lima);
+    }
+}
+
+.opcao:active {
+    transform: scale(.97);
+}
+
+.opcao.certa {
+    color: #0E1424;
+    background: var(--lima);
+    border-color: var(--lima);
+}
+
+.opcao.errada {
+    color: var(--cinza-claro);
+    background: none;
+    border-color: var(--linha);
+    text-decoration: line-through;
+}
+
+/* ---------- os botões ---------- */
+
+.acao {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 13px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 18px 26px;
+    color: var(--tinta);
+    background: none;
+    border: var(--borda) solid var(--linha);
+    border-radius: var(--raio-pil);
+    transition: background .12s, color .12s, transform .08s;
+}
+
+.acao:active {
+    transform: scale(.97);
+}
+
+.acao.principal {
+    color: #0E1424;
+    background: var(--lima);
+    border-color: var(--lima);
+}
+
+.som {
+    color: #F2EFE6;
+    background: var(--azul);
+    border: none;
+    width: 112px;
+    height: 112px;
+}
+
+/* ---------- a barra da sessão: tijolinhos, não um fio ---------- */
+
+#sessao-barra {
+    margin-top: 6px;
+}
+
+.sessao-trilho {
+    height: 6px;
+    background: var(--papel-3);
+    border: none;
+    border-radius: 3px;
+    overflow: hidden;
+    /* a máscara recorta o trilho em vinte pedaços */
+    -webkit-mask-image: repeating-linear-gradient(to right,
+        #000 0 calc(5% - 3px), transparent calc(5% - 3px) 5%);
+    mask-image: repeating-linear-gradient(to right,
+        #000 0 calc(5% - 3px), transparent calc(5% - 3px) 5%);
+}
+
+#sessao-cheio {
+    background: var(--lima);
+    border-radius: 0;
+}
+
+#sessao-conta {
+    font-size: 9px;
+    color: var(--cinza);
+}
+
+.sessao-parar {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    color: var(--cinza);
+    background: none;
+    border: none;
+}
+
+/* ---------- a barra de abas ---------- */
+
+#abas-app {
+    gap: 4px;
+    padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+    background: var(--topo-fundo);
+    box-shadow: none;
+    border-top: 3px solid var(--lima);
+}
+
+.aba-app {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    min-height: 42px;
+    color: var(--cinza);
+    background: none;
+    border: none;
+    border-radius: var(--raio-pil);
+}
+
+.aba-app.agora {
+    color: #0E1424;
+    background: var(--lima);
+}
+
+/* ---------- a capa ---------- */
+
+#capa {
+    background: var(--papel);
+    justify-content: flex-end;
+}
+
+#capa::after {
+    display: none;
+}
+
+.capa-fundo {
+    inset: 0 0 auto;
+    height: 46svh;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.capa-fundo .gato {
+    width: min(74vw, 330px);
+    height: auto;
+    margin-bottom: -4%;
+}
+
+.capa-kana {
+    display: none;
+}
+
+.capa-selo {
+    font-size: 10px;
+    letter-spacing: .3em;
+    color: var(--lima);
+}
+
+.capa-marca {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(50px, 16vw, 86px);
+    line-height: .88;
+    letter-spacing: -.04em;
+    text-transform: uppercase;
+    color: var(--tinta);
+    text-shadow: none;
+}
+
+.capa-marca br + * {
+    color: var(--lima);
+}
+
+.capa-sub {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.75;
+    color: var(--cinza);
+}
+
+#entrar.capa-botao {
+    font-family: var(--display);
+    font-size: 15px;
+    letter-spacing: .1em;
+    color: #0E1424;
+    background: var(--lima);
+    border: none;
+    border-radius: var(--raio-pil);
+}
+
+.capa-dica {
+    font-size: 9px;
+    color: var(--cinza);
+    opacity: 1;
+}
+
+/* ---------- o gato que espia ---------- */
+
+#gato-espia {
+    position: fixed;
+    right: 14px;
+    bottom: calc(66px + env(safe-area-inset-bottom));
+    z-index: 40;
+    width: 150px;
+    pointer-events: none;
+    display: none;
+    transition: transform .22s cubic-bezier(.2, 1.4, .4, 1);
+}
+
+/* ele só aparece quando tem exercício na tela */
+body:has(#palco:not([hidden])) #gato-espia {
+    display: block;
+}
+
+body.na-capa #gato-espia,
+body:has(#tela-aprender[hidden]) #gato-espia {
+    display: none;
+}
+
+#gato-espia .gato {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+/* no acerto ele sobe e abre um sorriso; no erro ele recua */
+body:has(#palco.acertou) #gato-espia {
+    transform: translateY(-18px);
+}
+
+body:has(#palco.errou) #gato-espia {
+    transform: translateY(10px);
+}
+
+/* ---------- as expressões: o css liga uma cara por vez ---------- */
+
+.gato .cara {
+    display: none;
+}
+
+.gato .cara-neutro {
+    display: block;
+}
+
+body:has(#palco.acertou) .gato .cara-neutro,
+body:has(#palco.errou) .gato .cara-neutro {
+    display: none;
+}
+
+body:has(#palco.acertou) .gato .cara-acertou {
+    display: block;
+}
+
+body:has(#palco.errou) .gato .cara-errou {
+    display: block;
+}
+
+/* quando o aluno está digitando, ele olha para o lado */
+body:has(#digitacao:not([hidden])) .gato .cara-neutro {
+    display: none;
+}
+
+body:has(#digitacao:not([hidden])) .gato .cara-olhando {
+    display: block;
+}
+
+body:has(#palco.acertou) .gato .cara-olhando,
+body:has(#palco.errou) .gato .cara-olhando {
+    display: none;
+}
+
+.gato .boca-aberta {
+    display: none;
+}
+
+/* ---------- cartões e caixas ---------- */
+
+.cartao,
+.caixa,
+.texto-novo,
+.texto-item,
+#backup,
+.capa,
+#fim {
+    background: var(--papel-2);
+    border: none;
+    border-radius: var(--raio-g);
+}
+
+.capa::before {
+    display: none;
+}
+
+.pilula {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    color: var(--tinta);
+    background: var(--papel-2);
+    border: var(--borda) solid var(--linha);
+    border-radius: var(--raio-pil);
+}
+
+.pilula.agora,
+.pilula.modo.agora {
+    color: #0E1424;
+    background: var(--lima);
+    border-color: var(--lima);
+}
+
+.pilula.modo {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .08em;
+}
+
+/* ---------- a tela de fim ---------- */
+
+#fim {
+    position: relative;
+    overflow: hidden;
+    padding-bottom: 150px;
+    background: var(--lima);
+    color: #0E1424;
+}
+
+/* o gato aparece embaixo, cortado pela borda do cartão */
+#fim::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -34px;
+    width: 168px;
+    height: 168px;
+    transform: translateX(-50%);
+    pointer-events: none;
+    background: url("data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22 aria-hidden=%22true%22><polygon points=%228%2C106 64%2C99 64%2C113%22 fill=%22%230B0F1C%22 stroke=%22%23F2EFE6%22 stroke-width=%223%22 stroke-linejoin=%22round%22/><polygon points=%22192%2C106 136%2C99 136%2C113%22 fill=%22%230B0F1C%22 stroke=%22%23F2EFE6%22 stroke-width=%223%22 stroke-linejoin=%22round%22/><polygon points=%226%2C126 64%2C119 64%2C133%22 fill=%22%230B0F1C%22 stroke=%22%23F2EFE6%22 stroke-width=%223%22 stroke-linejoin=%22round%22/><polygon points=%22194%2C126 136%2C119 136%2C133%22 fill=%22%230B0F1C%22 stroke=%22%23F2EFE6%22 stroke-width=%223%22 stroke-linejoin=%22round%22/><polygon points=%2210%2C146 64%2C139 64%2C153%22 fill=%22%230B0F1C%22 stroke=%22%23F2EFE6%22 stroke-width=%223%22 stroke-linejoin=%22round%22/><polygon points=%22190%2C146 136%2C139 136%2C153%22 fill=%22%230B0F1C%22 stroke=%22%23F2EFE6%22 stroke-width=%223%22 stroke-linejoin=%22round%22/><path d=%22M40 4 L96 52 L104 52 L160 4 L168 96 C168 140 138 176 100 176 C62 176 32 140 32 96 Z%22 fill=%22%230B0F1C%22 stroke=%22%23F2EFE6%22 stroke-width=%224%22 stroke-linejoin=%22round%22/><polygon points=%2252%2C30 62%2C80 88%2C60%22 fill=%22%23FF3B9A%22/><polygon points=%22148%2C30 138%2C80 112%2C60%22 fill=%22%23FF3B9A%22/><path d=%22M52 114 Q71 86 90 110%22 fill=%22none%22 stroke=%22%23D9F23C%22 stroke-width=%2211%22 stroke-linecap=%22round%22/><path d=%22M148 114 Q129 86 110 110%22 fill=%22none%22 stroke=%22%23D9F23C%22 stroke-width=%2211%22 stroke-linecap=%22round%22/><polygon points=%2294%2C133 106%2C133 100%2C142%22 fill=%22%23FF3B9A%22/><path d=%22M64 138 Q100 184 136 138 Q100 154 64 138 Z%22 fill=%22%23FF3B9A%22/><polygon points=%2274%2C140 85%2C140 79%2C154%22 fill=%22%23F2EFE6%22/><polygon points=%22115%2C140 126%2C140 121%2C154%22 fill=%22%23F2EFE6%22/></svg>") center bottom / contain no-repeat;
+}
+
+#fim .fim-numero,
+#fim .grande {
+    color: #0E1424;
+}
+
+#fim .fim-rotulo,
+#fim .sub,
+#fim .nota {
+    color: #4A5520;
+}
+
+#fim .acao {
+    border-color: #0E1424;
+    color: #0E1424;
+}
+
+#fim .acao.principal {
+    color: var(--lima);
+    background: #0E1424;
+    border-color: #0E1424;
+}
+
+/* ---------- progresso ---------- */
+
+.abas {
+    gap: 4px;
+}
+
+.aba {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--cinza);
+    background: var(--papel-2);
+    border: none;
+    border-radius: var(--raio-pil);
+}
+
+.aba.agora {
+    color: #0E1424;
+    background: var(--lima);
+}
+
+.grande,
+.fim-numero,
+.placar-grande,
+.numero,
+.valor {
+    font-family: var(--display);
+    font-weight: 400;
+    letter-spacing: -.03em;
+    color: var(--tinta);
+}
+
+.medidor,
+.trilho,
+.barra {
+    border-radius: var(--raio-pil);
+    overflow: hidden;
+}
+
+.barra-dia,
+.fatia {
+    background: var(--lima);
+    border-radius: 3px;
+}
+
+.ponto-dominio,
+.linha-dominio {
+    fill: var(--rosa);
+    stroke: var(--rosa);
+}
+
+.area-dominio {
+    fill: var(--rosa);
+    opacity: .14;
+}
+
+/* ---------- o mapa dos caracteres ---------- */
+
+.linha-kana,
+.linha-cartao {
+    border: none;
+    border-radius: var(--raio);
+    background: var(--papel-2);
+}
+
+.k {
+    border-radius: 10px;
+}
+
+/* ---------- a chave das gravações ---------- */
+
+.chave-trilho {
+    border: var(--borda) solid var(--linha);
+}
+
+.chave input:checked + .chave-trilho {
+    background: var(--lima);
+    border-color: var(--lima);
+}
+
+.chave input:checked + .chave-trilho .chave-bola {
+    background: #0E1424;
+}
+
+.nota-gravacoes {
+    border-left: 3px solid var(--lima);
+    background: var(--papel-2);
+    border-radius: 0 var(--raio) var(--raio) 0;
+}
+
+/* ---------- o apagar ---------- */
+
+#apagar {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    color: var(--cinza);
+    background: none;
+    border: var(--borda) solid var(--linha);
+    border-radius: var(--raio-pil);
+}
+
+/* ---------- a tela grande ---------- */
+
+@media (min-width: 900px) {
+    #masthead {
+        box-shadow: inset -3px 0 0 var(--lima);
+        background: var(--topo-fundo);
+    }
+
+    #abas-app {
+        border-top: none;
+    }
+
+    #gato-espia {
+        right: 28px;
+        bottom: 0;
+        width: 170px;
+    }
+
+    #palco {
+        box-shadow: none;
+    }
+}
+
+/* ---------- o campo de digitar: uma caixa, não um sublinhado solto ---------- */
+
+#entrada {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 30px;
+    letter-spacing: 0;
+    width: min(300px, 84%);
+    padding: 16px 18px 14px;
+    color: var(--tinta);
+    background: var(--papel-2);
+    border: var(--borda) solid var(--linha);
+    border-radius: var(--raio);
+    transition: border-color .12s;
+}
+
+#entrada:focus {
+    border-color: var(--lima);
+}
+
+#entrada::placeholder {
+    font-size: 20px;
+    color: var(--cinza-claro);
+}
+
+#entrada.certa {
+    color: #0E1424;
+    background: var(--lima);
+    border-color: var(--lima);
+}
+
+#entrada.errada {
+    color: var(--papel);
+    background: var(--rosa);
+    border-color: var(--rosa);
+}
+
+/* ---------- as opções precisavam de um contorno mais presente ---------- */
+
+:root {
+    --linha: #2E3C62;
+}
+
+html[data-visual="claro"] {
+    --linha: #CFC9B8;
+}
+
+/* ---------- a capa: o gato maior e o nome em duas cores ---------- */
+
+.capa-fundo .gato {
+    width: min(84vw, 370px);
+    margin-bottom: -6%;
+}
+
+.capa-marca .eco {
+    color: var(--lima);
+}
+
+html[data-visual="claro"] .capa-marca .eco {
+    color: var(--rosa);
+}
+
+/* no claro o botão de tema sumia no papel */
+html[data-visual="claro"] .tema {
+    color: var(--tinta);
+    background: var(--papel-3);
+}
+
+/* ---------- a barra de abas é escura nos dois temas ----------
+   então os rótulos não podem usar o cinza do tema claro */
+.aba-app {
+    color: #96A0B8;
+}
+
+.aba-app.agora {
+    color: #0E1424;
+}
+
+/* no Mac o cabeçalho vira um trilho escuro: o texto acompanha */
+@media (min-width: 900px) {
+    #masthead {
+        color: var(--topo-texto);
+    }
+
+    #masthead h1 {
+        color: var(--topo-texto);
+    }
+
+    html[data-visual="claro"] #masthead .tema {
+        color: var(--topo-texto);
+        background: rgba(242, 239, 230, .14);
+    }
+
+    html[data-visual="claro"] #masthead .marca-jp {
+        color: var(--lima);
+    }
+}
+
+/* a marca d'água vertical do trilho ficava escura sobre o escuro */
+@media (min-width: 1100px) {
+    #masthead::after {
+        color: var(--lima);
+        opacity: .34;
     }
 }
