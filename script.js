@@ -388,6 +388,7 @@ const HABILIDADES = {
 
 const FORMATOS = {
     "ler|escolha": "Reconhecer (escolha)",
+    "ler|carta": "Carta rápida",
     "ler|digitar": "Digitar o som",
     "ler|palavra": "Ler palavras",
     "ler|sequencia": "Leitura rápida",
@@ -672,6 +673,12 @@ function carregar() {
         textos = JSON.parse(guardados);
     }
 
+    const baralho = localStorage.getItem(CHAVE_CARTAS);
+
+    if (baralho !== null) {
+        cartas = JSON.parse(baralho);
+    }
+
     migrarIds();
 }
 
@@ -745,6 +752,278 @@ function viajar(horas) {
 
     salvar();
     mostrarPainel();
+}
+
+// ===== AS CARTAS =====
+//
+// Uma carta é um par: frente em japonês, verso em português. Serve para
+// repassar numa pausa curta, sem montar nem escrever nada — você olha,
+// tenta lembrar, vira, e diz se lembrou ou se escapou.
+//
+// O material é seu. O app não vem com carta nenhuma: você cola as suas
+// na tela Praticar. Assim cada pessoa estuda o próprio curso, e nada de
+// terceiro viaja junto com o app.
+//
+// A memória é a mesma do resto: a carta tem ficha em progresso, com id
+// "c:1", "c:2"... e usa a direção "ler", igual a ler um kana.
+
+const CHAVE_CARTAS = "kana-sensei-cartas-v1";
+
+// A carta vale menos que um exercício inteiro: olhar e lembrar é mais
+// fácil do que montar ou escrever. O peso é o expoente do ganho, então
+// meio peso faz a meia-vida crescer bem menos do que cresceria.
+const PESO_CARTA = 0.5;
+
+// numa sessão de "tudo", quantas das perguntas saem do baralho
+const CHANCE_CARTA = 0.3;
+
+const SEPARADOR_DE_CARTA = "=";
+const SEPARADOR_DE_NOTA = "|";
+
+// frase maior que isso aparece num corpo menor, para caber na tela
+const FRENTE_LONGA = 22;
+
+let cartas = [];
+
+function salvarCartas() {
+    localStorage.setItem(CHAVE_CARTAS, JSON.stringify(cartas));
+}
+
+function temCartas() {
+    return cartas.length > 0;
+}
+
+function cartaPorId(id) {
+    for (const carta of cartas) {
+        if (carta.id === id) {
+            return carta;
+        }
+    }
+
+    return null;
+}
+
+function novoIdDeCarta() {
+    let maior = 0;
+
+    for (const carta of cartas) {
+        const numero = Number(carta.id.slice(2));
+
+        if (numero > maior) {
+            maior = numero;
+        }
+    }
+
+    return "c:" + (maior + 1);
+}
+
+// texto do aluno entra em innerHTML em algumas telas: sem isso, um
+// sinal de menor-que no meio da frase quebraria a página
+function escapar(texto) {
+    return String(texto)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
+// Lê o que o aluno colou. Uma carta por linha:
+//
+//     japonês = português | nota
+//
+// A nota é opcional: é a explicação que aparece quando a carta vira.
+function lerCartasColadas(texto) {
+    const novas = [];
+    const problemas = [];
+    const linhas = texto.split("\n");
+
+    for (let i = 0; i < linhas.length; i++) {
+        const linha = linhas[i].trim();
+
+        if (linha === "") {
+            continue;
+        }
+
+        const corte = linha.indexOf(SEPARADOR_DE_CARTA);
+
+        if (corte === -1) {
+            problemas.push({ linha: i + 1, texto: linha, porque: "falta o =" });
+            continue;
+        }
+
+        const frente = linha.slice(0, corte).trim();
+        let verso = linha.slice(corte + 1).trim();
+        let nota = "";
+
+        const corteDaNota = verso.indexOf(SEPARADOR_DE_NOTA);
+
+        if (corteDaNota !== -1) {
+            nota = verso.slice(corteDaNota + 1).trim();
+            verso = verso.slice(0, corteDaNota).trim();
+        }
+
+        if (frente === "" || verso === "") {
+            problemas.push({ linha: i + 1, texto: linha, porque: "um dos lados está vazio" });
+            continue;
+        }
+
+        novas.push({ frente: frente, verso: verso, nota: nota });
+    }
+
+    return { cartas: novas, problemas: problemas };
+}
+
+// a frente é a identidade da carta: colar a mesma lista duas vezes não
+// duplica nada, e não perde a memória do que já foi estudado
+function guardarCartas(novas) {
+    let adicionadas = 0;
+    let repetidas = 0;
+
+    for (const nova of novas) {
+        const jaTem = cartas.some((carta) => carta.frente === nova.frente);
+
+        if (jaTem) {
+            repetidas = repetidas + 1;
+            continue;
+        }
+
+        cartas.push({
+            id: novoIdDeCarta(),
+            frente: nova.frente,
+            verso: nova.verso,
+            nota: nova.nota
+        });
+
+        adicionadas = adicionadas + 1;
+    }
+
+    salvarCartas();
+
+    return { adicionadas: adicionadas, repetidas: repetidas };
+}
+
+function removerCarta(id) {
+    cartas = cartas.filter((carta) => carta.id !== id);
+    delete progresso[id];
+    salvarCartas();
+    salvar();
+}
+
+function esvaziarBaralho() {
+    for (const carta of cartas) {
+        delete progresso[carta.id];
+    }
+
+    cartas = [];
+    salvarCartas();
+    salvar();
+}
+
+// quantas cartas já passaram da hora de rever
+function cartasVencidas() {
+    const agora = Date.now();
+    let quantas = 0;
+
+    for (const carta of cartas) {
+        const momento = quandoCai(memoriaDe(carta.id, "ler"));
+
+        if (momento === null || momento <= agora) {
+            quantas = quantas + 1;
+        }
+    }
+
+    return quantas;
+}
+
+// mesma conta de prioridade dos caracteres: o que você menos lembra
+// vem primeiro, com empurrão para o frágil e para o que escapou
+function prioridadeDaCarta(carta) {
+    const memoria = memoriaDe(carta.id, "ler");
+
+    if (memoria === null || memoria.meiaVida === 0) {
+        return PRIORIDADE_NOVO;
+    }
+
+    let valor = 1 - lembranca(memoria);
+
+    if (memoria.meiaVida <= MEIA_VIDA_INICIAL) {
+        valor = valor + BONUS_FRAGIL;
+    }
+
+    if (memoria.errouNaUltima) {
+        valor = valor + BONUS_ERRO;
+    }
+
+    return valor;
+}
+
+function escolherCarta() {
+    if (cartas.length === 0) {
+        return null;
+    }
+
+    const candidatos = cartas.map(function (carta) {
+        return { carta: carta, valor: prioridadeDaCarta(carta) * penalidade(carta.id) };
+    });
+
+    candidatos.sort((a, b) => b.valor - a.valor);
+
+    return sortearComPeso(candidatos.slice(0, QUANTOS_CANDIDATOS)).carta;
+}
+
+function criarCarta() {
+    const carta = escolherCarta();
+
+    if (carta === null) {
+        return null;
+    }
+
+    const memoria = memoriaDe(carta.id, "ler");
+    const nova = memoria === null || memoria.meiaVida === 0;
+
+    return {
+        // "correto" com a mesma forma de um caractere: assim o resto do
+        // app (placar, histórico, piores da sessão) não precisa saber
+        // que isto aqui é uma carta
+        correto: { id: carta.id, kana: carta.frente, som: carta.verso },
+        carta: carta,
+        direcao: "ler",
+        tipo: "carta",
+        peso: PESO_CARTA,
+        motivo: nova ? "Carta nova" : "Repassando",
+        opcoes: []
+    };
+}
+
+// o que a sessão serve: só kana, só cartas, ou os dois misturados
+const CONTEUDOS = [
+    { id: "kana", rotulo: "Kana" },
+    { id: "cartas", rotulo: "Cartas" },
+    { id: "tudo", rotulo: "Tudo" }
+];
+
+function conteudoDaSessao() {
+    const escolhido = sessao === null ? preferencia.conteudo : sessao.conteudo;
+
+    // sem baralho não existe nada além de kana, por mais que a
+    // preferência guardada diga o contrário
+    if (!temCartas()) {
+        return "kana";
+    }
+
+    return CONTEUDOS.some((item) => item.id === escolhido) ? escolhido : "kana";
+}
+
+function botoesDeConteudo() {
+    let corpo = "";
+
+    for (const item of CONTEUDOS) {
+        corpo += '<button class="pilula conteudo'
+            + (preferencia.conteudo === item.id ? " agora" : "") + '"'
+            + ' data-conteudo="' + item.id + '">' + item.rotulo + '</button>';
+    }
+
+    return corpo;
 }
 
 // ===== AS GRAVAÇÕES =====
@@ -2729,6 +3008,16 @@ function escolherPalavra(candidatas, direcao) {
 }
 
 function criarExercicio() {
+    const conteudo = conteudoDaSessao();
+
+    if (conteudo === "cartas" || (conteudo === "tudo" && Math.random() < CHANCE_CARTA)) {
+        const carta = criarCarta();
+
+        if (carta !== null) {
+            return carta;
+        }
+    }
+
     const alvo = escolherAlvo();
 
     if (alvo === null) {
@@ -3561,6 +3850,7 @@ const CHAVES_DO_APP = [
     CHAVE_HISTORICO,
     CHAVE_FORMATOS,
     CHAVE_TEXTOS,
+    CHAVE_CARTAS,
     "kana-sensei-tema-v1"
 ];
 
@@ -3690,7 +3980,8 @@ const TAMANHOS_DE_SESSAO = {
 // o que o aluno escolheu da última vez.
 // "alvos" guarda o tamanho de cada modo separado: trocar de perguntas
 // para tempo e voltar não pode apagar o 10 que ele tinha escolhido.
-let preferencia = { modo: "perguntas", alvo: 20, alvos: { perguntas: 20, tempo: 10 } };
+let preferencia = { modo: "perguntas", alvo: 20, conteudo: "kana",
+    alvos: { perguntas: 20, tempo: 10 } };
 
 function tamanhoLembrado(modo) {
     const lista = TAMANHOS_DE_SESSAO[modo];
@@ -3725,6 +4016,11 @@ function carregarPreferencia() {
             // preferência guardada antes de existir o "alvos"
             if (preferencia.alvos === undefined) {
                 preferencia.alvos = {};
+            }
+
+            // preferência guardada antes de existirem as cartas
+            if (preferencia.conteudo === undefined) {
+                preferencia.conteudo = "kana";
             }
 
             preferencia.alvos[preferencia.modo] = preferencia.alvo;
@@ -3773,6 +4069,7 @@ function comecarSessao() {
     sessao = {
         modo: preferencia.modo,
         alvo: preferencia.alvo,
+        conteudo: conteudoDaSessao(),
         feitas: 0,
         acertos: 0,
         novos: 0,
@@ -3864,8 +4161,16 @@ function frasedoDia() {
         partes.push(hoje.perguntas + (hoje.perguntas === 1 ? " resposta hoje" : " respostas hoje"));
     }
 
-    if (fila.agora > 0) {
-        partes.push(fila.agora + (fila.agora === 1 ? " item pedindo revisão" : " itens pedindo revisão"));
+    if (fila.caiu > 0) {
+        partes.push(fila.caiu
+            + (fila.caiu === 1 ? " item pedindo revisão" : " itens pedindo revisão"));
+    }
+
+    if (temCartas()) {
+        const vencidas = cartasVencidas();
+
+        partes.push(cartas.length + (cartas.length === 1 ? " carta" : " cartas")
+            + (vencidas > 0 ? ", " + vencidas + " para rever" : ""));
     }
 
     const vistos = CARACTERES.filter(foiApresentado).length;
@@ -3876,13 +4181,21 @@ function frasedoDia() {
 }
 
 function mostrarInicio() {
-    areaInicio.innerHTML = '<div class="capa">'
+    let corpo = '<div class="capa">'
         + '<span class="capa-jp">ひらがな・カタカナ</span>'
         + '<strong class="capa-titulo">Pronto para estudar?</strong>'
         + '<span class="capa-estado">' + frasedoDia() + '</span>'
         + '</div>'
-        + '<div class="escolha">'
-        + '<h3>Como você quer estudar</h3>'
+        + '<div class="escolha">';
+
+    // a escolha só aparece quando existe baralho: sem carta, não há
+    // o que escolher, e a linha a mais só atrapalharia
+    if (temCartas()) {
+        corpo += '<h3>O que estudar</h3>'
+            + '<div class="modos">' + botoesDeConteudo() + '</div>';
+    }
+
+    corpo += '<h3>Como você quer estudar</h3>'
         + '<div class="modos">'
         + '<button class="pilula modo' + (preferencia.modo === "perguntas" ? " agora" : "")
         + '" data-modo="perguntas">Por perguntas</button>'
@@ -3894,6 +4207,8 @@ function mostrarInicio() {
         + '<p class="nota">A sessão termina sozinha quando chega no fim. Você pode'
         + ' encerrar antes a qualquer momento — o que foi estudado fica guardado.</p>'
         + '</div>';
+
+    areaInicio.innerHTML = corpo;
 }
 
 function maisErradoDaSessao() {
@@ -3907,7 +4222,24 @@ function maisErradoDaSessao() {
         }
     }
 
-    return pior === null ? null : { caractere: porId(pior), erros: quantos };
+    if (pior === null) {
+        return null;
+    }
+
+    // a sessão mistura os dois: o pior pode ser um caractere ou uma carta
+    const caractere = porId(pior);
+
+    if (caractere !== null) {
+        return { rotulo: caractere.kana, detalhe: caractere.som, curto: true, erros: quantos };
+    }
+
+    const carta = cartaPorId(pior);
+
+    if (carta === null) {
+        return null;
+    }
+
+    return { rotulo: carta.frente, detalhe: carta.verso, curto: false, erros: quantos };
 }
 
 function mostrarFim() {
@@ -3929,9 +4261,10 @@ function mostrarFim() {
         + '</div>';
 
     if (pior !== null && pior.erros > 1) {
-        corpo += '<p class="nota">O que mais escapou foi <b class="kana-linha">'
-            + pior.caractere.kana + '</b> (' + pior.caractere.som + '), '
-            + pior.erros + ' vezes. Ele volta com prioridade na próxima sessão.</p>';
+        corpo += '<p class="nota">O que mais escapou foi <b class="'
+            + (pior.curto ? "kana-linha" : "kana-frase") + '">'
+            + escapar(pior.rotulo) + '</b> (' + escapar(pior.detalhe) + '), '
+            + pior.erros + ' vezes. Volta com prioridade na próxima sessão.</p>';
     }
 
     corpo += '<div class="fim-acoes">'
@@ -3985,6 +4318,15 @@ const areaAjudaFita = document.getElementById("ajuda-fita");
 const areaBandeja = document.getElementById("bandeja");
 const areaDicaFita = document.getElementById("dica-fita");
 const areaApresentacao = document.getElementById("apresentacao");
+const areaCarta = document.getElementById("carta");
+const areaCartaFrente = document.getElementById("carta-frente");
+const areaCartaVerso = document.getElementById("carta-verso");
+const areaCartaPortugues = document.getElementById("carta-portugues");
+const areaCartaNota = document.getElementById("carta-nota");
+const areaCartaDica = document.getElementById("carta-dica");
+const areaCartaLeitura = document.getElementById("carta-leitura");
+const areaCartaAcoes = document.getElementById("carta-acoes");
+const areaCartas = document.getElementById("cartas-conteudo");
 const areaFocoAtivo = document.getElementById("foco-ativo");
 const areaFocoControles = document.getElementById("foco-controles");
 const areaTextos = document.getElementById("textos-conteudo");
@@ -4242,6 +4584,13 @@ areaInicio.addEventListener("click", (evento) => {
         return;
     }
 
+    if (botao.dataset.conteudo !== undefined) {
+        preferencia.conteudo = botao.dataset.conteudo;
+        salvarPreferencia();
+        mostrarInicio();
+        return;
+    }
+
     if (botao.dataset.modo !== undefined) {
         preferencia.modo = botao.dataset.modo;
         preferencia.alvo = tamanhoLembrado(preferencia.modo);
@@ -4265,6 +4614,132 @@ areaInicio.addEventListener("click", (evento) => {
 
     if (botao.id === "comecar") {
         comecarSessao();
+    }
+});
+
+
+areaCarta.addEventListener("click", (evento) => {
+    const botao = evento.target.closest("button");
+
+    if (botao !== null && botao.dataset.lembrou !== undefined) {
+        responderCarta(botao.dataset.lembrou === "sim");
+        return;
+    }
+
+    // o som não pode virar a carta por acidente
+    if (botao !== null && botao.id === "carta-som") {
+        evento.stopPropagation();
+        falar(exercicio.carta.frente, VELOCIDADE_DITADO);
+        return;
+    }
+
+    virarCarta();
+});
+
+areaCartas.addEventListener("input", (evento) => {
+    if (evento.target.id === "baralho-busca") {
+        buscaNoBaralho = evento.target.value;
+        mostrandoNoBaralho = POR_PAGINA_NO_BARALHO;
+        cartaAberta = null;
+        cartaEmEdicao = null;
+        redesenharLinhas();
+    }
+});
+
+areaCartas.addEventListener("click", (evento) => {
+    const botao = evento.target.closest("button");
+
+    if (botao === null) {
+        return;
+    }
+
+    if (botao.dataset.painel !== undefined) {
+        painelDoBaralho = painelDoBaralho === botao.dataset.painel ? "" : botao.dataset.painel;
+        buscaNoBaralho = "";
+        mostrandoNoBaralho = POR_PAGINA_NO_BARALHO;
+        cartaAberta = null;
+        cartaEmEdicao = null;
+        mostrarCartas();
+        return;
+    }
+
+    if (botao.dataset.abrir !== undefined) {
+        abrirCarta(botao.dataset.abrir);
+        return;
+    }
+
+    if (botao.dataset.editar !== undefined) {
+        cartaEmEdicao = botao.dataset.editar;
+        redesenharLinhas();
+        document.getElementById("editar-frente").focus();
+        return;
+    }
+
+    if (botao.dataset.cancelar !== undefined) {
+        cartaEmEdicao = null;
+        redesenharLinhas();
+        return;
+    }
+
+    if (botao.dataset.salvar !== undefined) {
+        salvarEdicao(botao.dataset.salvar);
+        return;
+    }
+
+    if (botao.id === "baralho-mais") {
+        mostrandoNoBaralho = mostrandoNoBaralho + POR_PAGINA_NO_BARALHO;
+        redesenharLinhas();
+        return;
+    }
+
+    if (botao.id === "cartas-guardar") {
+        const campo = document.getElementById("cartas-coladas");
+        const lido = lerCartasColadas(campo.value);
+        const resultado = guardarCartas(lido.cartas);
+
+        campo.value = "";
+        mostrarCartas();
+        mostrarTelaDeAprender();
+
+        const recado = document.getElementById("cartas-recado");
+
+        if (recado !== null) {
+            recado.innerHTML = recadoDasCartas(resultado, lido.problemas);
+        }
+
+        return;
+    }
+
+    if (botao.id === "cartas-limpar") {
+        if (confirm("Esvaziar o baralho? Isso apaga as cartas e o que você"
+            + " já estudou nelas.")) {
+            esvaziarBaralho();
+            painelDoBaralho = "";
+            mostrarCartas();
+            mostrarTelaDeAprender();
+
+            if (emSessao()) {
+                proximo();
+            }
+        }
+
+        return;
+    }
+
+    if (botao.dataset.removerCarta !== undefined) {
+        const id = botao.dataset.removerCarta;
+        const eraOExercicio = emSessao() && exercicio !== null
+            && exercicio.tipo === "carta" && exercicio.correto.id === id;
+
+        removerCarta(id);
+        cartaAberta = null;
+        cartaEmEdicao = null;
+        mostrarCartas();
+        mostrarTelaDeAprender();
+
+        if (eraOExercicio) {
+            proximo();
+        }
     }
 });
 
@@ -4519,6 +4994,7 @@ function mostrarExercicio() {
     const ehLacuna = exercicio.tipo === "lacuna";
     const ehApresentacao = exercicio.tipo === "apresentacao";
     const ehVazio = exercicio.tipo === "vazio";
+    const ehCarta = exercicio.tipo === "carta";
     const naFita = TIPOS_DE_FITA.includes(exercicio.tipo);
     const digitando = exercicio.tipo === "digitar" || ehPalavra
         || TIPOS_QUE_SE_DIGITAM.includes(exercicio.tipo);
@@ -4529,12 +5005,14 @@ function mostrarExercicio() {
     areaPergunta.innerHTML = "";
     respondido = false;
 
-    const cartao = ehApresentacao || ehVazio;
+    // a carta ocupa o palco sozinha, igual à apresentação de um kana novo
+    const cartao = ehApresentacao || ehVazio || ehCarta;
 
     // na fita quem mostra o conteudo e a propria fita: o cabecalho so ocuparia espaco
     const semCabecalho = cartao || ((ehSequencia || ehTrecho || ehLacuna) && !ouvindo);
 
-    areaApresentacao.hidden = !cartao;
+    areaApresentacao.hidden = !cartao || ehCarta;
+    areaCarta.hidden = !ehCarta;
     areaMotivo.hidden = cartao;
     areaPergunta.hidden = semCabecalho;
     areaSignificado.hidden = semCabecalho;
@@ -4546,6 +5024,11 @@ function mostrarExercicio() {
     areaFita.hidden = !naFita;
     areaAjudaFita.hidden = !naFita;
     areaBandeja.hidden = !ehMontar;
+
+    if (ehCarta) {
+        mostrarCarta();
+        return;
+    }
 
     if (ehVazio) {
         mostrarFocoVazio();
@@ -4645,6 +5128,442 @@ function mostrarExercicio() {
             botaoCerto = botao;
         }
     }
+}
+
+
+// ---- a carta no palco ----
+
+function mostrarCarta() {
+    const carta = exercicio.carta;
+
+    areaCartaFrente.textContent = carta.frente;
+    areaCartaFrente.classList.toggle("longa", carta.frente.length > FRENTE_LONGA);
+    areaCartaPortugues.textContent = carta.verso;
+    areaCartaNota.textContent = carta.nota;
+    areaCartaNota.hidden = carta.nota === "";
+    areaCartaLeitura.innerHTML = leituraEmHtml(carta.frente);
+    areaCartaLeitura.hidden = true;
+    areaCartaVerso.hidden = true;
+    areaCartaAcoes.hidden = true;
+    areaCartaDica.hidden = false;
+    areaCarta.classList.remove("virada");
+}
+
+// Cada kana com o som dele embaixo, para conferir a leitura no verso
+// da carta. Dois kanas não têm som próprio: o っ dobra a consoante do
+// que vem depois, e o ー estica a vogal do que veio antes. Pontuação e
+// kanji ficam sem nada embaixo.
+function kanaComRomaji(texto) {
+    const unidades = dividirEmKanas(texto);
+    const saida = [];
+
+    for (let i = 0; i < unidades.length; i++) {
+        const atual = unidades[i];
+
+        if (atual === " " || atual === "　") {
+            saida.push({ kana: "", romaji: "", espaco: true });
+            continue;
+        }
+
+        if (atual === "っ" || atual === "ッ") {
+            const proximo = porKana(unidades[i + 1]);
+            const letra = proximo === null
+                ? ""
+                : (proximo.som[0] === "c" ? "t" : proximo.som[0]);
+
+            saida.push({ kana: atual, romaji: letra, espaco: false });
+            continue;
+        }
+
+        if (atual === "ー") {
+            let anterior = "";
+
+            for (const parte of saida) {
+                if (parte.romaji !== "") {
+                    anterior = parte.romaji;
+                }
+            }
+
+            saida.push({ kana: atual, romaji: anterior.slice(-1), espaco: false });
+            continue;
+        }
+
+        const caractere = porKana(atual);
+
+        saida.push({
+            kana: atual,
+            romaji: caractere === null ? "" : caractere.som,
+            espaco: false
+        });
+    }
+
+    return saida;
+}
+
+// O ponto final não tem som, e sozinho num par ele cai na linha de
+// baixo quando a frase quebra. Então ele viaja junto com o kana de antes.
+function juntarPontuacao(partes) {
+    const saida = [];
+
+    for (const parte of partes) {
+        const anterior = saida.length === 0 ? null : saida[saida.length - 1];
+        const solta = !parte.espaco && parte.romaji === "";
+
+        if (solta && anterior !== null && !anterior.espaco && anterior.romaji !== "") {
+            anterior.kana = anterior.kana + parte.kana;
+            continue;
+        }
+
+        saida.push({ kana: parte.kana, romaji: parte.romaji, espaco: parte.espaco });
+    }
+
+    return saida;
+}
+
+// Os pares vão agrupados por palavra. Sem isso a frase quebra no meio
+// de "たべます", porque cada kana é uma caixa independente.
+function leituraEmHtml(texto) {
+    let corpo = "";
+    let palavra = "";
+
+    const fecharPalavra = function () {
+        if (palavra !== "") {
+            corpo += '<span class="leitura-palavra">' + palavra + '</span>';
+            palavra = "";
+        }
+    };
+
+    for (const parte of juntarPontuacao(kanaComRomaji(texto))) {
+        if (parte.espaco) {
+            fecharPalavra();
+            continue;
+        }
+
+        palavra += '<span class="leitura-par">'
+            + '<b>' + escapar(parte.kana) + '</b>'
+            + '<i>' + escapar(parte.romaji) + '</i>'
+            + '</span>';
+    }
+
+    fecharPalavra();
+
+    return corpo;
+}
+
+function cartaVirada() {
+    return exercicio !== null && exercicio.tipo === "carta" && !areaCartaVerso.hidden;
+}
+
+function virarCarta() {
+    if (exercicio === null || exercicio.tipo !== "carta" || respondido) {
+        return;
+    }
+
+    if (cartaVirada()) {
+        return;
+    }
+
+    areaCartaLeitura.hidden = false;
+    areaCartaVerso.hidden = false;
+    areaCartaAcoes.hidden = false;
+    areaCartaDica.hidden = true;
+    areaCarta.classList.add("virada");
+}
+
+function responderCarta(lembrou) {
+    if (exercicio === null || exercicio.tipo !== "carta" || respondido) {
+        return;
+    }
+
+    // responder sem ter visto o verso não vale: primeiro vira
+    if (!cartaVirada()) {
+        virarCarta();
+        return;
+    }
+
+    respondido = true;
+
+    const id = exercicio.correto.id;
+
+    anotar(id, "ler", lembrou, PESO_CARTA);
+    lembrarDoRecente(id);
+    lembrarDoResultado(lembrou);
+    anotarNoHistorico(lembrou, formatoDe(exercicio));
+
+    total = total + 1;
+
+    if (lembrou) {
+        acertos = acertos + 1;
+    }
+
+    if (sessao !== null) {
+        sessao.feitas = sessao.feitas + 1;
+
+        if (lembrou) {
+            sessao.acertos = sessao.acertos + 1;
+        } else {
+            sessao.piores[id] = (sessao.piores[id] || 0) + 1;
+        }
+    }
+
+    areaPlacar.textContent = acertos + " de " + total;
+    mostrarBarraDaSessao();
+    marcarPalco(lembrou ? "acertou" : "errou");
+    mostrarPainel();
+
+    // quando escapou, a carta fica um instante a mais na tela: é o
+    // momento em que a resposta gruda
+    temporizador = setTimeout(proximo, lembrou ? PAUSA_ACERTO : PAUSA_ACERTO_COM_SOM);
+}
+
+// ---- o baralho na tela Praticar ----
+
+// ---- o baralho ----
+//
+// Com duzentas cartas uma lista solta vira rolagem sem fim. Então a
+// tela mostra só a capa do baralho, e as cartas ficam por dentro: com
+// busca, e abrindo uma de cada vez para editar ou remover.
+
+const POR_PAGINA_NO_BARALHO = 25;
+
+let painelDoBaralho = "";
+let buscaNoBaralho = "";
+let mostrandoNoBaralho = POR_PAGINA_NO_BARALHO;
+let cartaAberta = null;
+let cartaEmEdicao = null;
+
+function mediaDoBaralho() {
+    if (cartas.length === 0) {
+        return 0;
+    }
+
+    let soma = 0;
+
+    for (const carta of cartas) {
+        soma = soma + lembranca(memoriaDe(carta.id, "ler"));
+    }
+
+    return soma / cartas.length;
+}
+
+function cartasFiltradas() {
+    const busca = buscaNoBaralho.trim().toLowerCase();
+
+    if (busca === "") {
+        return cartas;
+    }
+
+    return cartas.filter(function (carta) {
+        return carta.frente.toLowerCase().includes(busca)
+            || carta.verso.toLowerCase().includes(busca)
+            || carta.nota.toLowerCase().includes(busca);
+    });
+}
+
+function capaDoBaralho() {
+    if (cartas.length === 0) {
+        return '<div class="baralho-capa vazia">'
+            + '<p class="nota">Nenhuma carta ainda. O baralho é seu: o app não'
+            + ' vem com nada dentro.</p>'
+            + '<button class="acao principal" data-painel="colar">Colar cartas</button>'
+            + '</div>';
+    }
+
+    const vencidas = cartasVencidas();
+
+    return '<div class="baralho-capa">'
+        + '<div class="baralho-pilha">'
+        + '<strong>' + cartas.length + '</strong>'
+        + '<span>' + (cartas.length === 1 ? "carta" : "cartas") + '</span>'
+        + '</div>'
+        + '<div class="baralho-estado">'
+        + '<span><b>' + vencidas + '</b> para rever agora</span>'
+        + '<span><b>' + porcento(mediaDoBaralho()) + '</b> de memória</span>'
+        + '</div>'
+        + '<div class="baralho-botoes">'
+        + '<button class="acao' + (painelDoBaralho === "lista" ? " agora" : "") + '"'
+        + ' data-painel="lista">'
+        + (painelDoBaralho === "lista" ? "Fechar" : "Abrir") + '</button>'
+        + '<button class="acao' + (painelDoBaralho === "colar" ? " agora" : "") + '"'
+        + ' data-painel="colar">'
+        + (painelDoBaralho === "colar" ? "Fechar" : "Colar mais") + '</button>'
+        + '</div>'
+        + '</div>';
+}
+
+function painelDeColar() {
+    const exemplo = "ともだち と おにぎり を たべます。 = Comer o onigiri com meu amigo."
+        + " | と liga duas coisas, como o \"e\"";
+
+    return '<div class="texto-novo">'
+        + '<h4 class="texto-novo-titulo">Colar cartas</h4>'
+        + '<textarea id="cartas-coladas" rows="5"'
+        + ' placeholder="' + escapar(exemplo) + '"></textarea>'
+        + '<p class="nota">Uma carta por linha: <code>japonês = português</code>.'
+        + ' Depois do <code>|</code> você pode escrever uma nota, que aparece'
+        + ' quando a carta vira.</p>'
+        + '<button class="acao principal" id="cartas-guardar">Guardar cartas</button>'
+        + '<div id="cartas-recado"></div>'
+        + '</div>';
+}
+
+function formularioDaCarta(carta) {
+    return '<div class="carta-item editando">'
+        + '<label class="campo-carta"><span>Japonês</span>'
+        + '<input id="editar-frente" value="' + escapar(carta.frente) + '"></label>'
+        + '<label class="campo-carta"><span>Português</span>'
+        + '<input id="editar-verso" value="' + escapar(carta.verso) + '"></label>'
+        + '<label class="campo-carta"><span>Nota (pode ficar vazia)</span>'
+        + '<input id="editar-nota" value="' + escapar(carta.nota) + '"></label>'
+        + '<div class="carta-item-acoes">'
+        + '<button class="acao" data-cancelar="sim">Cancelar</button>'
+        + '<button class="acao principal" data-salvar="' + carta.id + '">Salvar</button>'
+        + '</div>'
+        + '</div>';
+}
+
+function linhaDaCarta(carta) {
+    if (cartaEmEdicao === carta.id) {
+        return formularioDaCarta(carta);
+    }
+
+    const aberta = cartaAberta === carta.id;
+    const memoria = memoriaDe(carta.id, "ler");
+    const nova = memoria === null || memoria.meiaVida === 0;
+
+    let corpo = '<div class="carta-item' + (aberta ? " aberta" : "") + '">'
+        + '<button class="carta-item-cabeca" data-abrir="' + carta.id + '">'
+        + '<span class="carta-item-textos">'
+        + '<span class="carta-item-frente kana-frase">' + escapar(carta.frente) + '</span>'
+        + '<span class="carta-item-verso">' + escapar(carta.verso) + '</span>'
+        + '</span>'
+        + '<span class="medidor' + (nova ? " vazio" : "") + '">'
+        + (nova ? "nova" : porcento(lembranca(memoria))) + '</span>'
+        + '</button>';
+
+    if (aberta) {
+        corpo += '<div class="carta-item-detalhe">';
+
+        if (carta.nota !== "") {
+            corpo += '<p class="carta-item-nota">' + escapar(carta.nota) + '</p>';
+        }
+
+        corpo += '<div class="carta-item-acoes">'
+            + '<button class="acao" data-editar="' + carta.id + '">Editar</button>'
+            + '<button class="acao apagar" data-remover-carta="' + carta.id + '">Remover</button>'
+            + '</div></div>';
+    }
+
+    return corpo + '</div>';
+}
+
+function linhasDoBaralho() {
+    const achadas = cartasFiltradas();
+
+    if (achadas.length === 0) {
+        return '<p class="nota">Nenhuma carta com esse texto.</p>';
+    }
+
+    let corpo = "";
+
+    for (const carta of achadas.slice(0, mostrandoNoBaralho)) {
+        corpo += linhaDaCarta(carta);
+    }
+
+    if (achadas.length > mostrandoNoBaralho) {
+        corpo += '<button class="acao mostrar-mais" id="baralho-mais">Mostrar mais '
+            + Math.min(POR_PAGINA_NO_BARALHO, achadas.length - mostrandoNoBaralho)
+            + ' de ' + (achadas.length - mostrandoNoBaralho) + '</button>';
+    }
+
+    return corpo;
+}
+
+function painelDaLista() {
+    return '<div class="baralho-lista">'
+        + '<input id="baralho-busca" class="busca" type="search"'
+        + ' placeholder="Procurar no baralho" value="' + escapar(buscaNoBaralho) + '">'
+        + '<div id="baralho-linhas">' + linhasDoBaralho() + '</div>'
+        + '<button class="acao apagar esvaziar" id="cartas-limpar">Esvaziar o baralho</button>'
+        + '</div>';
+}
+
+function mostrarCartas() {
+    areaCartas.innerHTML = capaDoBaralho()
+        + (painelDoBaralho === "colar" ? painelDeColar() : "")
+        + (painelDoBaralho === "lista" ? painelDaLista() : "");
+}
+
+// só as linhas: redesenhar a tela inteira a cada tecla tiraria o
+// cursor do campo de busca
+function redesenharLinhas() {
+    const area = document.getElementById("baralho-linhas");
+
+    if (area !== null) {
+        area.innerHTML = linhasDoBaralho();
+    }
+}
+
+function abrirCarta(id) {
+    cartaAberta = cartaAberta === id ? null : id;
+    cartaEmEdicao = null;
+    redesenharLinhas();
+}
+
+function salvarEdicao(id) {
+    const carta = cartaPorId(id);
+
+    if (carta === null) {
+        return;
+    }
+
+    const frente = document.getElementById("editar-frente").value.trim();
+    const verso = document.getElementById("editar-verso").value.trim();
+
+    // uma carta sem um dos lados não serve para nada: a edição não passa
+    if (frente === "" || verso === "") {
+        return;
+    }
+
+    carta.frente = frente;
+    carta.verso = verso;
+    carta.nota = document.getElementById("editar-nota").value.trim();
+    salvarCartas();
+    cartaEmEdicao = null;
+    redesenharLinhas();
+
+    // a carta pode estar na tela neste instante
+    if (emSessao() && exercicio !== null && exercicio.tipo === "carta"
+        && exercicio.correto.id === id) {
+        proximo();
+    }
+}
+
+function recadoDasCartas(resultado, problemas) {
+    const partes = [];
+
+    if (resultado.adicionadas > 0) {
+        partes.push(resultado.adicionadas
+            + (resultado.adicionadas === 1 ? " carta nova" : " cartas novas"));
+    }
+
+    if (resultado.repetidas > 0) {
+        partes.push(resultado.repetidas
+            + (resultado.repetidas === 1 ? " já estava no baralho" : " já estavam no baralho"));
+    }
+
+    let corpo = partes.length === 0
+        ? '<p class="nota">Nenhuma carta foi lida.</p>'
+        : '<p class="nota">' + partes.join(" · ") + '.</p>';
+
+    if (problemas.length > 0) {
+        corpo += '<p class="nota aviso-kanji">'
+            + problemas.length + (problemas.length === 1 ? " linha ficou" : " linhas ficaram")
+            + ' de fora. A primeira foi a ' + problemas[0].linha
+            + ': ' + problemas[0].porque + '.</p>';
+    }
+
+    return corpo;
 }
 
 function cartao(titulo, corpo) {
@@ -5792,6 +6711,20 @@ document.addEventListener("keydown", (evento) => {
         return;
     }
 
+    // na carta: espaço vira, 1 escapou, 2 lembrei
+    if (exercicio.tipo === "carta") {
+        if (evento.key === " " || evento.key === "Enter") {
+            evento.preventDefault();
+            virarCarta();
+        } else if (evento.key === "1") {
+            responderCarta(false);
+        } else if (evento.key === "2") {
+            responderCarta(true);
+        }
+
+        return;
+    }
+
     const naFita = usaFita() && !respondido;
 
     if (naFita && evento.key === " ") {
@@ -5843,6 +6776,7 @@ prepararGravacoes().then(mostrarVoz);
 montarControlesDoFoco();
 mostrarVoz();
 mostrarTextos();
+mostrarCartas();
 mostrarBackup();
 mostrarTela("aprender");
 abrirCapa();

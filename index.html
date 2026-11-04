@@ -136,6 +136,25 @@
 
                 <div id="apresentacao" hidden></div>
 
+                    <div id="carta" hidden>
+                        <div class="carta-corpo">
+                            <button class="som carta-som" id="carta-som" type="button"
+                                aria-label="Ouvir a frase">🔊</button>
+                            <strong class="carta-frente" id="carta-frente"></strong>
+                            <div class="carta-leitura" id="carta-leitura" hidden></div>
+                            <div class="carta-verso" id="carta-verso" hidden>
+                                <span class="carta-portugues" id="carta-portugues"></span>
+                                <span class="carta-nota" id="carta-nota" hidden></span>
+                            </div>
+                            <span class="carta-dica" id="carta-dica">Toque para ver</span>
+                        </div>
+                        <div class="carta-acoes" id="carta-acoes" hidden>
+                            <button class="acao carta-escapou" data-lembrou="nao">Escapou</button>
+                            <button class="acao principal carta-lembrei"
+                                data-lembrou="sim">Lembrei</button>
+                        </div>
+                    </div>
+
                 <div id="fita" hidden></div>
                 <div id="bandeja" hidden></div>
 
@@ -174,6 +193,9 @@
 
             <h2 class="titulo-tela">A voz</h2>
             <div id="voz-controles"></div>
+
+            <h2 class="titulo-tela">Minhas cartas</h2>
+            <div id="cartas-conteudo"></div>
 
             <h2 class="titulo-tela">Meus textos</h2>
             <div id="textos-conteudo"></div>

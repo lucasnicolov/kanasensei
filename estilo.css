@@ -4503,3 +4503,436 @@ html[data-visual="claro"] .tema {
     background: var(--papel-2);
     border-radius: var(--raio);
 }
+
+/* A lima do tema escuro não se lê sobre papel: 1.5:1. A nota da carta
+   ganha cor própria, com a mesma família mas escura o bastante (5.6:1). */
+:root {
+    --nota: var(--lima);
+}
+
+html[data-visual="claro"] {
+    --nota: #5C6B00;
+}
+
+/* ===== A CARTA RÁPIDA ===== */
+
+/* o gato olha para a carta enquanto ela está de frente, e volta ao
+   normal quando ela vira — a mesma reação que ele tem na digitação */
+body:has(#carta:not([hidden]):not(.virada)) .gato .cara-olhando {
+    display: block;
+}
+
+body:has(#carta:not([hidden]):not(.virada)) .gato .cara-neutro {
+    display: none;
+}
+
+#carta {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.carta-corpo {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    min-height: 220px;
+    /* o alto sobra para o botão de som não encostar na frase */
+    padding: 58px 22px 26px;
+    border-radius: var(--raio-g);
+    background: var(--papel-2);
+    text-align: center;
+    cursor: pointer;
+}
+
+#carta .som {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 44px;
+    height: 44px;
+    color: var(--tinta);
+    background: var(--papel-3);
+    border-color: var(--linha);
+}
+
+.carta-frente {
+    font-family: var(--kana);
+    font-weight: 700;
+    font-size: clamp(1.5rem, 6.4vw, 2.1rem);
+    line-height: 1.55;
+    color: var(--tinta);
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+}
+
+.carta-frente.longa {
+    font-size: clamp(1.1rem, 4.4vw, 1.5rem);
+}
+
+.carta-verso {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    padding-top: 16px;
+    border-top: 1px solid var(--linha);
+}
+
+.carta-portugues {
+    font-family: var(--texto);
+    font-weight: 700;
+    font-size: clamp(1.05rem, 4.2vw, 1.35rem);
+    line-height: 1.35;
+    color: var(--tinta);
+}
+
+.carta-nota {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    line-height: 1.6;
+    color: var(--nota);
+}
+
+/* na carta virada o japonês recua: quem manda agora é o português.
+   recuar pela cor, e não pela opacidade, porque no tema claro o
+   transparente some no papel */
+#carta.virada .carta-frente {
+    display: none;
+}
+
+.carta-dica {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--cinza);
+}
+
+.carta-acoes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.carta-escapou {
+    border-color: var(--rosa);
+    color: var(--rosa);
+}
+
+/* ===== O BARALHO NA TELA PRATICAR ===== */
+
+.baralho-resumo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin: 18px 0 10px;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--cinza);
+}
+
+.baralho-resumo b {
+    font-size: 0.95rem;
+    color: var(--tinta);
+}
+
+.baralho-resumo .apagar {
+    margin-left: auto;
+}
+
+.lista-cartas {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.carta-item {
+    padding: 16px;
+    border-radius: var(--raio);
+    background: var(--papel-2);
+}
+
+.carta-item-cabeca {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.carta-item-nota {
+    margin: 8px 0 0;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    line-height: 1.6;
+    color: var(--nota);
+}
+
+/* frase inteira em japonês: o .kana-linha é feito para um caractere
+   solto e fica grande demais numa frase */
+.kana-frase {
+    font-family: var(--kana);
+    font-weight: 700;
+    line-height: 1.6;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+}
+
+/* ===== A LEITURA: KANA COM ROMAJI ===== */
+
+.carta-leitura {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: center;
+    /* o espaço entre palavras vem daqui, e a quebra só acontece aqui */
+    gap: 4px 0.7em;
+}
+
+.leitura-palavra {
+    display: flex;
+    align-items: flex-end;
+}
+
+.leitura-par {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    padding: 0 1px;
+}
+
+.leitura-par b {
+    font-family: var(--kana);
+    font-weight: 500;
+    font-size: clamp(1rem, 4vw, 1.25rem);
+    line-height: 1.25;
+    color: var(--tinta);
+}
+
+.leitura-par i {
+    font-family: var(--mono);
+    font-style: normal;
+    font-size: 0.56rem;
+    line-height: 1.2;
+    letter-spacing: 0.02em;
+    color: var(--cinza);
+}
+
+/* ===== O BARALHO ===== */
+
+.baralho-capa {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 14px;
+    padding: 20px;
+    border-radius: var(--raio-g);
+    background: var(--papel-2);
+}
+
+/* as duas folhas atrás, para parecer uma pilha de cartas */
+.baralho-capa::before,
+.baralho-capa::after {
+    content: "";
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: -5px;
+    height: 10px;
+    border-radius: 0 0 var(--raio) var(--raio);
+    background: var(--papel-2);
+    opacity: 0.6;
+    z-index: -1;
+}
+
+.baralho-capa::after {
+    left: 24px;
+    right: 24px;
+    bottom: -10px;
+    opacity: 0.35;
+}
+
+.baralho-capa.vazia {
+    align-items: flex-start;
+}
+
+.baralho-capa.vazia::before,
+.baralho-capa.vazia::after {
+    display: none;
+}
+
+.baralho-pilha {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.baralho-pilha strong {
+    font-family: var(--display);
+    font-size: 2.4rem;
+    line-height: 1;
+    color: var(--tinta);
+}
+
+.baralho-pilha span {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--cinza);
+}
+
+.baralho-estado {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--cinza);
+}
+
+.baralho-estado b {
+    font-size: 0.85rem;
+    color: var(--tinta);
+}
+
+.baralho-botoes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.baralho-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.busca {
+    width: 100%;
+    padding: 12px 16px;
+    border: var(--borda) solid var(--linha);
+    border-radius: var(--raio-pil);
+    background: var(--papel-2);
+    font-family: var(--texto);
+    font-size: 0.95rem;
+    color: var(--tinta);
+}
+
+#baralho-linhas {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.carta-item {
+    padding: 0;
+    border-radius: var(--raio);
+    background: var(--papel-2);
+    overflow: hidden;
+}
+
+.carta-item-cabeca {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 16px;
+    border: 0;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+}
+
+.carta-item-textos {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    flex: 1;
+}
+
+.carta-item-frente {
+    font-size: 0.98rem;
+    color: var(--tinta);
+}
+
+.carta-item-verso {
+    font-family: var(--texto);
+    font-size: 0.8rem;
+    line-height: 1.35;
+    color: var(--cinza);
+}
+
+/* fechada, cada carta ocupa duas linhas e nada mais: é o que deixa
+   duzentas delas caberem numa lista que dá para percorrer */
+.carta-item:not(.aberta) .carta-item-frente,
+.carta-item:not(.aberta) .carta-item-verso {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.carta-item.aberta .carta-item-frente {
+    white-space: normal;
+}
+
+.carta-item-detalhe {
+    padding: 0 16px 14px;
+}
+
+.carta-item-acoes {
+    display: flex;
+    gap: 10px;
+}
+
+.carta-item-acoes .acao {
+    flex: 1;
+}
+
+.carta-item.editando {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+}
+
+.campo-carta {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.campo-carta span {
+    font-family: var(--mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--cinza);
+}
+
+.campo-carta input {
+    width: 100%;
+    padding: 11px 14px;
+    border: var(--borda) solid var(--linha);
+    border-radius: var(--raio);
+    background: var(--papel);
+    font-family: var(--texto);
+    font-size: 1rem;
+    color: var(--tinta);
+}
+
+.mostrar-mais,
+.esvaziar {
+    width: 100%;
+}
