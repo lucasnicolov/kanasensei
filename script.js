@@ -4703,6 +4703,7 @@ const areaEscritaPergunta = document.getElementById("escrita-pergunta");
 const areaEscritaCampo = document.getElementById("escrita-campo");
 const areaEscritaEco = document.getElementById("escrita-eco");
 const areaEscritaRecado = document.getElementById("escrita-recado");
+const areaEscritaProximo = document.getElementById("escrita-proximo");
 const areaFocoAtivo = document.getElementById("foco-ativo");
 const areaTextos = document.getElementById("textos-conteudo");
 const areaAbas = document.getElementById("abas");
@@ -5047,9 +5048,30 @@ areaEscrita.addEventListener("keydown", (evento) => {
     }
 });
 
+document.addEventListener("keydown", (evento) => {
+    // com a tela parada no erro, Enter e espaço seguem adiante
+    if (exercicio === null || exercicio.tipo !== "carta-escrever") {
+        return;
+    }
+
+    if (areaEscritaProximo.hidden) {
+        return;
+    }
+
+    if (evento.key === "Enter" || evento.key === " ") {
+        evento.preventDefault();
+        proximo();
+    }
+});
+
 areaEscrita.addEventListener("click", (evento) => {
     if (evento.target.closest("#escrita-conferir") !== null) {
         responderEscrita();
+        return;
+    }
+
+    if (evento.target.closest("#escrita-proximo") !== null) {
+        proximo();
     }
 });
 
@@ -5762,6 +5784,7 @@ function mostrarEscrita() {
     areaEscritaEco.textContent = "";
     areaEscritaRecado.innerHTML = "";
     areaEscritaRecado.hidden = true;
+    areaEscritaProximo.hidden = true;
     areaEscrita.classList.remove("respondida");
 
     if (!ehToque()) {
@@ -5798,7 +5821,9 @@ function responderEscrita() {
             + '<p class="escrita-seu">você escreveu <b class="kana-frase">'
             + escapar(escrito) + '</b></p>';
 
-    fecharCarta(acertou);
+    // acertou, segue sozinho; errou, a tela espera você
+    areaEscritaProximo.hidden = acertou;
+    fecharCarta(acertou, !acertou);
 }
 
 // ---- o que as três formas têm em comum ----
@@ -5807,7 +5832,7 @@ function responderEscrita() {
 // próxima. Era só da carta simples; agora o quiz e a escrita usam o
 // mesmo caminho, para o placar e o histórico não divergirem.
 
-function fecharCarta(acertou) {
+function fecharCarta(acertou, esperar) {
     const id = exercicio.correto.id;
 
     anotar(id, "ler", acertou, exercicio.peso);
@@ -5838,6 +5863,13 @@ function fecharCarta(acertou) {
 
     // quando escapou, fica um instante a mais na tela: é o momento em
     // que a resposta gruda
+    // "esperar" segura a tela: a resposta certa fica à vista até você
+    // apertar Próximo. Um segundo não dá para comparar o que você
+    // escreveu com o que era.
+    if (esperar) {
+        return;
+    }
+
     temporizador = setTimeout(proximo, acertou ? PAUSA_ACERTO : PAUSA_ACERTO_COM_SOM);
 }
 
