@@ -5388,3 +5388,134 @@ body:has(#carta:not([hidden]):not(.virada)) .gato .cara-neutro {
     text-transform: uppercase;
     color: var(--cinza);
 }
+
+/* ===== COMBINAR ===== */
+
+#combinar {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.combinar-topo {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--cinza);
+}
+
+.combinar-tempo {
+    font-size: 0.95rem;
+    letter-spacing: 0.06em;
+    color: var(--lima);
+}
+
+.combinar-trilho {
+    height: 5px;
+    border-radius: 3px;
+    background: var(--papel-3);
+    overflow: hidden;
+}
+
+.combinar-cheio {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: 3px;
+    background: var(--lima);
+    transition: width 0.2s ease-out;
+}
+
+.combinar-grade {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.combinar-peca {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 74px;
+    padding: 12px 10px;
+    border: var(--borda) solid transparent;
+    border-radius: var(--raio);
+    background: var(--papel-2);
+    font-family: var(--texto);
+    font-weight: 600;
+    font-size: 0.82rem;
+    line-height: 1.3;
+    text-align: center;
+    color: var(--tinta);
+    cursor: pointer;
+}
+
+.combinar-peca.jp {
+    font-family: var(--kana);
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.45;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+}
+
+.combinar-peca.aberta {
+    border-color: var(--azul);
+    background: color-mix(in srgb, var(--azul) 18%, var(--papel-2));
+}
+
+.combinar-peca.errada {
+    border-color: var(--rosa);
+    background: color-mix(in srgb, var(--rosa) 14%, var(--papel-2));
+}
+
+/* o par fechado sai do caminho sem sumir: ainda dá para reler */
+.combinar-peca.feita {
+    border-color: color-mix(in srgb, var(--lima) 50%, transparent);
+    background: color-mix(in srgb, var(--lima) 10%, var(--papel-2));
+    color: var(--cinza);
+    cursor: default;
+}
+
+.combinar-fim {
+    margin-top: 6px;
+    padding: 18px;
+    border-radius: var(--raio);
+    background: var(--papel-2);
+    text-align: center;
+}
+
+.combinar-conta-fim {
+    margin: 0 0 14px;
+    font-family: var(--texto);
+    font-size: 0.86rem;
+    color: var(--cinza);
+}
+
+.combinar-conta-fim b {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    color: var(--tinta);
+}
+
+/* O gato nunca fica por cima de um botão — regra do projeto.
+   Duas situações tiram ele de cena:
+   1. o tabuleiro do Combinar, que é alto em qualquer tela;
+   2. telas baixas durante o exercício, onde não sobra altura e ele
+      encostava no Próximo e no "Entendi" (isso já acontecia no
+      iPhone SE antes dos modos novos). */
+body:has(#combinar:not([hidden])) #gato-espia {
+    display: none;
+}
+
+@media (max-height: 800px) {
+    body:has(#palco:not([hidden])) #gato-espia {
+        display: none;
+    }
+}

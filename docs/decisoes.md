@@ -5,6 +5,37 @@ foi descartado. O descarte também é direção.
 
 ---
 
+## 2026-11-22 · Cartas · R5 — Combinar, e a tela que espera no erro
+
+**Em jogo:** o quarto modo de carta, e a pressa do app quando a resposta
+sai errada.
+
+**A tela espera.** No Escrever e no Quiz, errar não passa mais sozinho: a
+resposta certa fica à vista com um botão Próximo. Acertar continua
+seguindo direto — aí não há o que analisar. Palavras do Lucas: "aparece
+muito rápido a forma correta. Precisa deixar na tela pra eu ver".
+
+**Combinar.** Cinco cartas viradas em dez peças embaralhadas, relógio
+correndo. Cada par fechado vale uma resposta da sessão, então um
+tabuleiro conta cinco. Fechar de primeira é acerto; se a carta entrou
+numa tentativa errada antes, conta erro — foi chute até achar. Peso 0.4,
+o mais baixo dos quatro: reconhecer entre dez peças à vista é o que menos
+prova. Precisa de cinco cartas no baralho; abaixo disso o modo cai na
+carta simples.
+
+**O gato saiu de cena em duas situações**, pela regra de nunca ficar por
+cima de um botão: no tabuleiro do Combinar, que é alto em qualquer tela, e
+durante o exercício em telas de menos de 800px de altura. O detector de
+diagramação ganhou um teste para isso e, de quebra, achou que o problema
+já existia no iPhone SE na tela de caractere novo, antes dos modos novos.
+
+**O baralho pessoal.** Um `meu-baralho.js` ao lado do index.html é
+importado sozinho, uma vez. Fica no `.gitignore`: são 794 cartas tiradas
+do material da Onigiri Nihongo, que não pode ser publicado com o app.
+Esvaziar o baralho não traz tudo de volta; para isso existe um botão.
+
+---
+
 ## 2026-11-22 · Estrutura · R4 — dois módulos e os modos de carta
 
 **Em jogo:** como separar o silabário das cartas, já que tudo cabia numa

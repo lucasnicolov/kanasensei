@@ -391,6 +391,7 @@ const FORMATOS = {
     "ler|carta": "Carta rápida",
     "ler|carta-quiz": "Quiz da carta",
     "ler|carta-escrever": "Escrever a frase",
+    "ler|carta-combinar": "Combinar os pares",
     "ler|digitar": "Digitar o som",
     "ler|palavra": "Ler palavras",
     "ler|sequencia": "Leitura rápida",
@@ -1123,6 +1124,14 @@ function criarCarta() {
 
         if (escrita !== null) {
             return escrita;
+        }
+    }
+
+    if (modo === "combinar") {
+        const jogo = criarCombinar();
+
+        if (jogo !== null) {
+            return jogo;
         }
     }
 
@@ -4232,6 +4241,8 @@ function encerrarSessao() {
 
     sessao.terminou = true;
     sessao.duracao = minutosNaSessao();
+    pararRelogioDoCombinar();
+    jogoDeCombinar = null;
     clearTimeout(temporizador);
     temporizador = null;
     document.removeEventListener("click", proximo);
@@ -4332,7 +4343,8 @@ let telaDeAprender = "modulos";
 const MODOS_DE_CARTA = [
     { id: "cartas", nome: "Cartas", oque: "vira e diz se lembrou", minimo: 1 },
     { id: "quiz", nome: "Quiz", oque: "escolhe entre quatro", minimo: 4 },
-    { id: "escrever", nome: "Escrever", oque: "digita em kana", minimo: 1 }
+    { id: "escrever", nome: "Escrever", oque: "digita em kana", minimo: 1 },
+    { id: "combinar", nome: "Combinar", oque: "liga os pares no tempo", minimo: 5 }
 ];
 
 // quanto cada modo vale na memória. O peso é o expoente do ganho:
@@ -4704,6 +4716,13 @@ const areaEscritaCampo = document.getElementById("escrita-campo");
 const areaEscritaEco = document.getElementById("escrita-eco");
 const areaEscritaRecado = document.getElementById("escrita-recado");
 const areaEscritaProximo = document.getElementById("escrita-proximo");
+const areaQuizProximo = document.getElementById("quiz-proximo");
+const areaCombinar = document.getElementById("combinar");
+const areaCombinarConta = document.getElementById("combinar-conta");
+const areaCombinarTempo = document.getElementById("combinar-tempo");
+const areaCombinarCheio = document.getElementById("combinar-cheio");
+const areaCombinarGrade = document.getElementById("combinar-grade");
+const areaCombinarFim = document.getElementById("combinar-fim");
 const areaFocoAtivo = document.getElementById("foco-ativo");
 const areaTextos = document.getElementById("textos-conteudo");
 const areaAbas = document.getElementById("abas");
@@ -5028,10 +5047,28 @@ areaInicio.addEventListener("click", (evento) => {
 
 
 areaQuiz.addEventListener("click", (evento) => {
+    if (evento.target.closest("#quiz-proximo") !== null) {
+        proximo();
+        return;
+    }
+
     const botao = evento.target.closest("[data-opcao]");
 
     if (botao !== null) {
         responderQuiz(Number(botao.dataset.opcao));
+    }
+});
+
+areaCombinar.addEventListener("click", (evento) => {
+    if (evento.target.closest("#combinar-proximo") !== null) {
+        proximo();
+        return;
+    }
+
+    const peca = evento.target.closest("[data-peca]");
+
+    if (peca !== null) {
+        tocarPeca(Number(peca.dataset.peca));
     }
 });
 
@@ -5434,6 +5471,13 @@ function mostrarExercicio() {
     const ehCarta = exercicio.tipo === "carta";
     const ehQuiz = exercicio.tipo === "carta-quiz";
     const ehEscrita = exercicio.tipo === "carta-escrever";
+    const ehCombinar = exercicio.tipo === "carta-combinar";
+
+    // o relógio não pode continuar correndo numa tela que saiu
+    if (!ehCombinar) {
+        pararRelogioDoCombinar();
+        jogoDeCombinar = null;
+    }
     const naFita = TIPOS_DE_FITA.includes(exercicio.tipo);
     const digitando = exercicio.tipo === "digitar" || ehPalavra
         || TIPOS_QUE_SE_DIGITAM.includes(exercicio.tipo);
@@ -5445,15 +5489,16 @@ function mostrarExercicio() {
     respondido = false;
 
     // estas ocupam o palco sozinhas, igual à apresentação de um kana novo
-    const cartao = ehApresentacao || ehVazio || ehCarta || ehQuiz || ehEscrita;
+    const cartao = ehApresentacao || ehVazio || ehCarta || ehQuiz || ehEscrita || ehCombinar;
 
     // na fita quem mostra o conteudo e a propria fita: o cabecalho so ocuparia espaco
     const semCabecalho = cartao || ((ehSequencia || ehTrecho || ehLacuna) && !ouvindo);
 
-    areaApresentacao.hidden = !cartao || ehCarta || ehQuiz || ehEscrita;
+    areaApresentacao.hidden = !cartao || ehCarta || ehQuiz || ehEscrita || ehCombinar;
     areaCarta.hidden = !ehCarta;
     areaQuiz.hidden = !ehQuiz;
     areaEscrita.hidden = !ehEscrita;
+    areaCombinar.hidden = !ehCombinar;
     areaMotivo.hidden = cartao;
     areaPergunta.hidden = semCabecalho;
     areaSignificado.hidden = semCabecalho;
@@ -5478,6 +5523,11 @@ function mostrarExercicio() {
 
     if (ehEscrita) {
         mostrarEscrita();
+        return;
+    }
+
+    if (ehCombinar) {
+        mostrarCombinar();
         return;
     }
 
@@ -5724,6 +5774,7 @@ function mostrarQuiz() {
     });
 
     areaQuizOpcoes.innerHTML = corpo;
+    areaQuizProximo.hidden = true;
 }
 
 function responderQuiz(indice) {
@@ -5750,7 +5801,9 @@ function responderQuiz(indice) {
         }
     });
 
-    fecharCarta(escolhida.certa);
+    // acertou, segue sozinho; errou, a tela espera você olhar
+    areaQuizProximo.hidden = escolhida.certa;
+    fecharCarta(escolhida.certa, !escolhida.certa);
 }
 
 // ---- escrever a frase ----
@@ -5832,9 +5885,10 @@ function responderEscrita() {
 // próxima. Era só da carta simples; agora o quiz e a escrita usam o
 // mesmo caminho, para o placar e o histórico não divergirem.
 
-function fecharCarta(acertou, esperar) {
-    const id = exercicio.correto.id;
-
+// Uma resposta anotada: na memória, no placar e na sessão. O
+// Combinar chama isto uma vez por par, porque lá cada tabuleiro vale
+// várias respostas de uma vez.
+function anotarResposta(id, acertou) {
     anotar(id, "ler", acertou, exercicio.peso);
     lembrarDoRecente(id);
     lembrarDoResultado(acertou);
@@ -5858,6 +5912,10 @@ function fecharCarta(acertou, esperar) {
 
     areaPlacar.textContent = acertos + " de " + total;
     mostrarBarraDaSessao();
+}
+
+function fecharCarta(acertou, esperar) {
+    anotarResposta(exercicio.correto.id, acertou);
     marcarPalco(acertou ? "acertou" : "errou");
     mostrarPainel();
 
@@ -5906,6 +5964,242 @@ function responderCarta(lembrou) {
 
     respondido = true;
     fecharCarta(lembrou);
+}
+
+// ---- combinar: ligar os pares contra o relógio ----
+//
+// O tabuleiro tem cinco cartas viradas em dez peças, embaralhadas:
+// cinco em japonês e cinco em português. Cada par fechado conta como
+// uma resposta, então um tabuleiro vale cinco da sessão.
+//
+// Acertar de primeira conta acerto. Se a carta entrou em alguma
+// tentativa errada antes, conta erro — foi chute até achar.
+
+const PARES_NO_COMBINAR = 5;
+const PESO_COMBINAR = 0.4;
+const PAUSA_DO_ERRO_NO_COMBINAR = 550;
+
+let jogoDeCombinar = null;
+let relogioDoCombinar = null;
+
+function pararRelogioDoCombinar() {
+    if (relogioDoCombinar !== null) {
+        clearInterval(relogioDoCombinar);
+        relogioDoCombinar = null;
+    }
+}
+
+function cartasParaCombinar() {
+    // as mais fracas primeiro, igual ao resto do app, mas com folga
+    // para o tabuleiro não repetir sempre as mesmas cinco
+    const candidatas = cartas.map(function (carta) {
+        return { carta: carta, valor: prioridadeDaCarta(carta) * penalidade(carta.id) };
+    });
+
+    candidatas.sort((a, b) => b.valor - a.valor);
+
+    const poco = candidatas.slice(0, Math.min(cartas.length, PARES_NO_COMBINAR * 3));
+    const sorteadas = [];
+
+    while (sorteadas.length < PARES_NO_COMBINAR && poco.length > 0) {
+        const i = Math.floor(Math.random() * poco.length);
+        sorteadas.push(poco[i].carta);
+        poco.splice(i, 1);
+    }
+
+    return sorteadas;
+}
+
+function criarCombinar() {
+    if (cartas.length < PARES_NO_COMBINAR) {
+        return null;
+    }
+
+    const escolhidas = cartasParaCombinar();
+
+    if (escolhidas.length < PARES_NO_COMBINAR) {
+        return null;
+    }
+
+    const pecas = [];
+
+    for (const carta of escolhidas) {
+        pecas.push({ cartaId: carta.id, texto: carta.frente, lado: "jp", estado: "" });
+        pecas.push({ cartaId: carta.id, texto: carta.verso, lado: "pt", estado: "" });
+    }
+
+    return {
+        // o tabuleiro não tem uma carta "da vez": são cinco ao mesmo
+        // tempo, e cada uma é anotada quando o par fecha
+        correto: null,
+        cartasDoJogo: escolhidas,
+        pecas: embaralhar(pecas),
+        direcao: "ler",
+        tipo: "carta-combinar",
+        peso: PESO_COMBINAR,
+        motivo: "Ligue os pares",
+        opcoes: []
+    };
+}
+
+function mostrarCombinar() {
+    jogoDeCombinar = {
+        pecas: exercicio.pecas,
+        escolhida: null,
+        travado: false,
+        feitos: 0,
+        erros: {},
+        comecou: Date.now(),
+        acabou: false
+    };
+
+    for (const peca of jogoDeCombinar.pecas) {
+        peca.estado = "";
+    }
+
+    areaCombinarFim.hidden = true;
+    areaCombinarFim.innerHTML = "";
+    desenharCombinar();
+
+    pararRelogioDoCombinar();
+    relogioDoCombinar = setInterval(desenharRelogio, 1000);
+    desenharRelogio();
+}
+
+function tempoNoCombinar() {
+    return Math.floor((Date.now() - jogoDeCombinar.comecou) / 1000);
+}
+
+function emMinutos(segundos) {
+    const m = Math.floor(segundos / 60);
+    const s = segundos % 60;
+
+    return m + ":" + (s < 10 ? "0" : "") + s;
+}
+
+function desenharRelogio() {
+    if (jogoDeCombinar === null) {
+        return;
+    }
+
+    areaCombinarTempo.textContent = emMinutos(tempoNoCombinar());
+}
+
+function desenharCombinar() {
+    const jogo = jogoDeCombinar;
+    const total = jogo.pecas.length / 2;
+
+    areaCombinarConta.textContent = jogo.feitos + " de " + total
+        + (total === 1 ? " par" : " pares");
+    areaCombinarCheio.style.width = Math.round(jogo.feitos / total * 100) + "%";
+
+    let corpo = "";
+
+    jogo.pecas.forEach(function (peca, i) {
+        corpo += '<button class="combinar-peca ' + peca.lado
+            + (peca.estado ? " " + peca.estado : "") + '"'
+            + ' data-peca="' + i + '"'
+            + (peca.estado === "feita" ? " disabled" : "") + '>'
+            + escapar(peca.texto) + '</button>';
+    });
+
+    areaCombinarGrade.innerHTML = corpo;
+}
+
+function tocarPeca(indice) {
+    const jogo = jogoDeCombinar;
+
+    if (jogo === null || jogo.travado || jogo.acabou) {
+        return;
+    }
+
+    const peca = jogo.pecas[indice];
+
+    if (peca === undefined || peca.estado === "feita") {
+        return;
+    }
+
+    // tocar de novo na mesma solta a peça
+    if (jogo.escolhida === indice) {
+        peca.estado = "";
+        jogo.escolhida = null;
+        desenharCombinar();
+        return;
+    }
+
+    if (jogo.escolhida === null) {
+        peca.estado = "aberta";
+        jogo.escolhida = indice;
+        desenharCombinar();
+        return;
+    }
+
+    const outra = jogo.pecas[jogo.escolhida];
+
+    if (outra.cartaId === peca.cartaId) {
+        peca.estado = "feita";
+        outra.estado = "feita";
+        jogo.escolhida = null;
+        jogo.feitos = jogo.feitos + 1;
+
+        // de primeira é acerto; depois de ter chutado, não
+        anotarResposta(peca.cartaId, (jogo.erros[peca.cartaId] || 0) === 0);
+        desenharCombinar();
+
+        if (jogo.feitos === jogo.pecas.length / 2) {
+            terminarCombinar();
+        }
+
+        return;
+    }
+
+    jogo.erros[peca.cartaId] = (jogo.erros[peca.cartaId] || 0) + 1;
+    jogo.erros[outra.cartaId] = (jogo.erros[outra.cartaId] || 0) + 1;
+    peca.estado = "errada";
+    outra.estado = "errada";
+    jogo.travado = true;
+    desenharCombinar();
+
+    setTimeout(function () {
+        if (jogoDeCombinar !== jogo) {
+            return;
+        }
+
+        peca.estado = "";
+        outra.estado = "";
+        jogo.escolhida = null;
+        jogo.travado = false;
+        desenharCombinar();
+    }, PAUSA_DO_ERRO_NO_COMBINAR);
+}
+
+function terminarCombinar() {
+    const jogo = jogoDeCombinar;
+
+    jogo.acabou = true;
+    pararRelogioDoCombinar();
+
+    const segundos = tempoNoCombinar();
+    let tropecos = 0;
+
+    for (const id of Object.keys(jogo.erros)) {
+        tropecos = tropecos + jogo.erros[id];
+    }
+
+    // os erros são contados em dobro (as duas peças da tentativa)
+    tropecos = Math.round(tropecos / 2);
+
+    marcarPalco(tropecos === 0 ? "acertou" : null);
+    mostrarPainel();
+
+    areaCombinarFim.hidden = false;
+    areaCombinarFim.innerHTML = '<span class="etiqueta lima">Tabuleiro limpo</span>'
+        + '<p class="combinar-conta-fim"><b>' + emMinutos(segundos) + '</b>'
+        + (tropecos === 0
+            ? " · sem errar nenhum"
+            : " · " + tropecos + (tropecos === 1 ? " tentativa errada" : " tentativas erradas"))
+        + '</p>'
+        + '<button class="acao principal" id="combinar-proximo">Próximo</button>';
 }
 
 // ---- o baralho na tela Praticar ----
@@ -7320,12 +7614,34 @@ document.addEventListener("keydown", (evento) => {
         return;
     }
 
-    // no quiz: 1 a 4 escolhem a opção
+    // no quiz: 1 a 4 escolhem a opção; com a tela parada no erro,
+    // Enter e espaço seguem adiante
     if (exercicio.tipo === "carta-quiz") {
+        if (!areaQuizProximo.hidden) {
+            if (evento.key === "Enter" || evento.key === " ") {
+                evento.preventDefault();
+                proximo();
+            }
+
+            return;
+        }
+
         const n = Number(evento.key);
 
         if (n >= 1 && n <= OPCOES_NO_QUIZ) {
             responderQuiz(n - 1);
+        }
+
+        return;
+    }
+
+    // no combinar: 1 a 0 tocam as peças na ordem da grade
+    if (exercicio.tipo === "carta-combinar") {
+        if (jogoDeCombinar !== null && jogoDeCombinar.acabou) {
+            if (evento.key === "Enter" || evento.key === " ") {
+                evento.preventDefault();
+                proximo();
+            }
         }
 
         return;

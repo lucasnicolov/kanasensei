@@ -26,14 +26,16 @@ A **carta rápida**, em código, nos três arquivos do app:
 - a carta vira no toque e responde com **Escapou** / **Lembrei**;
 - no teclado: espaço vira, 1 escapou, 2 lembrei;
 - o verso mostra o kana de novo com o romaji embaixo de cada um;
-- o baralho tem capa, busca, página de 25, editar e remover.
+- o baralho tem capa, busca, página de 25, editar e remover;
+- quatro modos de carta: Cartas, Quiz, Escrever e Combinar;
+- errando no Quiz e no Escrever, a tela espera o Próximo;
+- o `meu-baralho.js` entra sozinho (794 cartas, fora do git).
 
 Falta o Lucas testar em `localhost:8000` e no iPhone, e publicar.
 
 ## Aprovado e ainda por fazer
 
-O modo **Combinar** das cartas (ligar os pares contra o relógio), e os dois
-exercícios de montar escolhidos na R1: **Bandeja** e **Ditado**. O desenho está no Figma, na seção
+Os dois exercícios de montar escolhidos na R1: **Bandeja** e **Ditado**. O desenho está no Figma, na seção
 "Frases — R1 · o fluxo inteiro e as opções de montar".
 
 ## Pronto para usar
@@ -47,9 +49,8 @@ exercícios de montar escolhidos na R1: **Bandeja** e **Ditado**. O desenho est�
 
 ## Próximos passos, em ordem
 
-1. Testar os dois módulos e publicar.
-2. O modo **Combinar**.
-3. A **Bandeja** em código, depois o **Ditado**.
+1. Testar os quatro modos e publicar.
+2. A **Bandeja** em código, depois o **Ditado**.
 3. Os pontos de melhoria que o Lucas ainda tem para passar, um por um — ele
    está mexendo nos textos.
 
