@@ -5371,3 +5371,20 @@ body:has(#carta:not([hidden]):not(.virada)) .gato .cara-neutro {
     appearance: none;
     -webkit-appearance: none;
 }
+
+/* o arquivo de cartas que o app carrega sozinho */
+.baralho-arquivo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--linha);
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--cinza);
+}

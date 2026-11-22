@@ -681,6 +681,10 @@ function carregar() {
         cartas = JSON.parse(baralho);
     }
 
+    if (baralhoDoArquivo() !== null && !jaImportouOArquivo()) {
+        importarDoArquivo();
+    }
+
     migrarIds();
 }
 
@@ -754,6 +758,43 @@ function viajar(horas) {
 
     salvar();
     mostrarPainel();
+}
+
+// ===== O BARALHO DO ARQUIVO =====
+//
+// Colar oitocentas cartas à mão não é vida. Se existir um
+// meu-baralho.js ao lado do index.html, o app importa ele sozinho, uma
+// vez só.
+//
+// Esse arquivo está no .gitignore: o material é seu e não sobe junto
+// com o app. Quem abrir o app publicado simplesmente não tem o arquivo,
+// e segue colando as próprias cartas.
+
+const CHAVE_BARALHO_LOCAL = "kana-sensei-baralho-local-v1";
+
+function baralhoDoArquivo() {
+    return typeof BARALHO_LOCAL === "undefined" ? null : BARALHO_LOCAL;
+}
+
+function jaImportouOArquivo() {
+    return localStorage.getItem(CHAVE_BARALHO_LOCAL) !== null;
+}
+
+// A marca fica guardada mesmo depois de esvaziar o baralho: senão,
+// apagar tudo e atualizar a página traria as oitocentas de volta.
+function importarDoArquivo() {
+    const doArquivo = baralhoDoArquivo();
+
+    if (doArquivo === null) {
+        return null;
+    }
+
+    const resultado = guardarCartas(doArquivo);
+
+    localStorage.setItem(CHAVE_BARALHO_LOCAL,
+        JSON.stringify({ quando: Date.now(), quantas: doArquivo.length }));
+
+    return resultado;
 }
 
 // ===== AS CARTAS =====
@@ -5104,6 +5145,21 @@ areaCartas.addEventListener("click", (evento) => {
         return;
     }
 
+    if (botao.id === "baralho-recarregar") {
+        const resultado = importarDoArquivo();
+
+        mostrarCartas();
+        mostrarTelaDeAprender();
+
+        const recado = document.getElementById("baralho-recado");
+
+        if (recado !== null && resultado !== null) {
+            recado.innerHTML = recadoDasCartas(resultado, []);
+        }
+
+        return;
+    }
+
     if (botao.id === "cartas-limpar") {
         if (confirm("Esvaziar o baralho? Isso apaga as cartas e o que você"
             + " já estudou nelas.")) {
@@ -5870,6 +5926,8 @@ function capaDoBaralho() {
             + '<p class="nota">Nenhuma carta ainda. O baralho é seu: o app não'
             + ' vem com nada dentro.</p>'
             + '<button class="acao principal" data-painel="colar">Colar cartas</button>'
+            + arquivoDoBaralho()
+            + '<div id="baralho-recado"></div>'
             + '</div>';
     }
 
@@ -5892,6 +5950,21 @@ function capaDoBaralho() {
         + ' data-painel="colar">'
         + (painelDoBaralho === "colar" ? "Fechar" : "Colar mais") + '</button>'
         + '</div>'
+        + arquivoDoBaralho()
+        + '<div id="baralho-recado"></div>'
+        + '</div>';
+}
+
+function arquivoDoBaralho() {
+    const doArquivo = baralhoDoArquivo();
+
+    if (doArquivo === null) {
+        return "";
+    }
+
+    return '<div class="baralho-arquivo">'
+        + '<span>meu-baralho.js · ' + doArquivo.length + ' cartas</span>'
+        + '<button class="acao" id="baralho-recarregar">Carregar de novo</button>'
         + '</div>';
 }
 

@@ -7,3 +7,6 @@ backup/
 .DS_Store
 node_modules/
 falhas.json
+
+# o baralho pessoal: material do curso, não sobe
+meu-baralho.js
