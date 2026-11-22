@@ -389,6 +389,8 @@ const HABILIDADES = {
 const FORMATOS = {
     "ler|escolha": "Reconhecer (escolha)",
     "ler|carta": "Carta rápida",
+    "ler|carta-quiz": "Quiz da carta",
+    "ler|carta-escrever": "Escrever a frase",
     "ler|digitar": "Digitar o som",
     "ler|palavra": "Ler palavras",
     "ler|sequencia": "Leitura rápida",
@@ -971,21 +973,19 @@ function escolherCarta() {
     return sortearComPeso(candidatos.slice(0, QUANTOS_CANDIDATOS)).carta;
 }
 
-function criarCarta() {
-    const carta = escolherCarta();
+// "correto" com a mesma forma de um caractere: assim o resto do app
+// (placar, histórico, piores da sessão) não precisa saber que isto
+// aqui é uma carta e não uma letra
+function alvoDaCarta(carta) {
+    return { id: carta.id, kana: carta.frente, som: carta.verso };
+}
 
-    if (carta === null) {
-        return null;
-    }
-
+function criarCartaSimples(carta) {
     const memoria = memoriaDe(carta.id, "ler");
     const nova = memoria === null || memoria.meiaVida === 0;
 
     return {
-        // "correto" com a mesma forma de um caractere: assim o resto do
-        // app (placar, histórico, piores da sessão) não precisa saber
-        // que isto aqui é uma carta
-        correto: { id: carta.id, kana: carta.frente, som: carta.verso },
+        correto: alvoDaCarta(carta),
         carta: carta,
         direcao: "ler",
         tipo: "carta",
@@ -993,6 +993,99 @@ function criarCarta() {
         motivo: nova ? "Carta nova" : "Repassando",
         opcoes: []
     };
+}
+
+// As outras cartas que acompanham a certa no quiz.
+//
+// O nome é comprido de propósito: o app já tem um distratores() para
+// caracteres, declarado mais adiante no arquivo, e duas funções com o
+// mesmo nome no escopo global não convivem — a última ganha.
+function outrasCartasPara(carta, quantos) {
+    const outras = cartas.filter((c) => c.id !== carta.id);
+    const sorteadas = [];
+
+    while (sorteadas.length < quantos && outras.length > 0) {
+        const i = Math.floor(Math.random() * outras.length);
+        sorteadas.push(outras[i]);
+        outras.splice(i, 1);
+    }
+
+    return sorteadas;
+}
+
+function criarQuiz(carta) {
+    const outras = outrasCartasPara(carta, OPCOES_NO_QUIZ - 1);
+
+    if (outras.length < OPCOES_NO_QUIZ - 1) {
+        return null;
+    }
+
+    // metade das vezes de trás para frente: ver o português e achar o
+    // japonês é outra pergunta, e bem mais difícil
+    const dePonta = Math.random() < 0.5;
+    const lado = dePonta ? "verso" : "frente";
+    const pergunta = dePonta ? carta.frente : carta.verso;
+
+    const opcoes = embaralhar(outras.concat([carta])).map(function (c) {
+        return { id: c.id, texto: c[lado], certa: c.id === carta.id };
+    });
+
+    return {
+        correto: alvoDaCarta(carta),
+        carta: carta,
+        direcao: "ler",
+        tipo: "carta-quiz",
+        peso: PESO_QUIZ,
+        emJapones: !dePonta,
+        pergunta: pergunta,
+        perguntaEmJapones: dePonta,
+        motivo: dePonta ? "Qual é a tradução" : "Qual é a frase em japonês",
+        opcoes: opcoes
+    };
+}
+
+function criarEscrita(carta) {
+    if (!daParaEscrever(carta)) {
+        return null;
+    }
+
+    return {
+        correto: alvoDaCarta(carta),
+        carta: carta,
+        direcao: "ler",
+        tipo: "carta-escrever",
+        peso: PESO_ESCRITA,
+        motivo: "Escreva a frase em kana",
+        opcoes: []
+    };
+}
+
+function criarCarta() {
+    const carta = escolherCarta();
+
+    if (carta === null) {
+        return null;
+    }
+
+    const modo = modoDeCarta();
+
+    if (modo === "quiz") {
+        const quiz = criarQuiz(carta);
+
+        if (quiz !== null) {
+            return quiz;
+        }
+    }
+
+    if (modo === "escrever") {
+        const escrita = criarEscrita(carta);
+
+        if (escrita !== null) {
+            return escrita;
+        }
+    }
+
+    return criarCartaSimples(carta);
 }
 
 // o que a sessão serve: só kana, só cartas, ou os dois misturados
@@ -1014,17 +1107,6 @@ function conteudoDaSessao() {
     return CONTEUDOS.some((item) => item.id === escolhido) ? escolhido : "kana";
 }
 
-function botoesDeConteudo() {
-    let corpo = "";
-
-    for (const item of CONTEUDOS) {
-        corpo += '<button class="pilula conteudo'
-            + (preferencia.conteudo === item.id ? " agora" : "") + '"'
-            + ' data-conteudo="' + item.id + '">' + item.rotulo + '</button>';
-    }
-
-    return corpo;
-}
 
 // ===== AS GRAVAÇÕES =====
 
@@ -2159,7 +2241,8 @@ function rotuloDaLinha(linha) {
 
 function limparFoco() {
     foco = { silabario: "", conjunto: "", direcao: "", texto: "" };
-    montarControlesDoFoco();
+    mostrarInicio();
+    mostrarBarraDoFoco();
     mostrarTextos();
 
     if (emSessao()) {
@@ -2169,7 +2252,8 @@ function limparFoco() {
 
 function estudarTexto(id) {
     foco = { silabario: "", conjunto: "", direcao: "", texto: id };
-    montarControlesDoFoco();
+    mostrarInicio();
+    mostrarBarraDoFoco();
     mostrarTextos();
 
     if (emSessao()) {
@@ -2370,8 +2454,12 @@ function estaAprendendo(caractere) {
     return false;
 }
 
+// O limite de coisas novas no ar tem que ser contado dentro do mesmo
+// conjunto de onde a letra nova vai sair — ou seja, dentro do foco.
+// Contando o app inteiro, quem está no meio do hiragana nunca ganhava
+// um katakana novo: o foco ficava preso na única letra já apresentada.
 function quantosAprendendo() {
-    return CARACTERES.filter(estaAprendendo).length;
+    return caracteresNoFoco().filter(estaAprendendo).length;
 }
 
 function desempenhoRecente() {
@@ -3981,7 +4069,7 @@ const TAMANHOS_DE_SESSAO = {
 // "alvos" guarda o tamanho de cada modo separado: trocar de perguntas
 // para tempo e voltar não pode apagar o 10 que ele tinha escolhido.
 let preferencia = { modo: "perguntas", alvo: 20, conteudo: "kana",
-    alvos: { perguntas: 20, tempo: 10 } };
+    modoDeCarta: "cartas", alvos: { perguntas: 20, tempo: 10 } };
 
 function tamanhoLembrado(modo) {
     const lista = TAMANHOS_DE_SESSAO[modo];
@@ -4021,6 +4109,11 @@ function carregarPreferencia() {
             // preferência guardada antes de existirem as cartas
             if (preferencia.conteudo === undefined) {
                 preferencia.conteudo = "kana";
+            }
+
+            // preferência guardada antes de existirem os modos de carta
+            if (preferencia.modoDeCarta === undefined) {
+                preferencia.modoDeCarta = "cartas";
             }
 
             preferencia.alvos[preferencia.modo] = preferencia.alvo;
@@ -4066,10 +4159,16 @@ function sessaoAcabou() {
 }
 
 function comecarSessao() {
+    // a sessão anterior ainda está aqui, e as duas funções abaixo leem
+    // dela quando existe: sem zerar, a sessão nova herdaria o conteúdo
+    // e o modo da passada mesmo depois de você trocar
+    sessao = null;
+
     sessao = {
         modo: preferencia.modo,
         alvo: preferencia.alvo,
         conteudo: conteudoDaSessao(),
+        modoDeCarta: modoDeCarta(),
         feitas: 0,
         acertos: 0,
         novos: 0,
@@ -4180,35 +4279,262 @@ function frasedoDia() {
     return partes.join(" · ");
 }
 
-function mostrarInicio() {
-    let corpo = '<div class="capa">'
-        + '<span class="capa-jp">ひらがな・カタカナ</span>'
-        + '<strong class="capa-titulo">Pronto para estudar?</strong>'
-        + '<span class="capa-estado">' + frasedoDia() + '</span>'
-        + '</div>'
-        + '<div class="escolha">';
+// ===== OS DOIS MÓDULOS =====
+//
+// A tela Aprender tem três estados: a escolha do módulo, os ajustes do
+// silabário e os ajustes das cartas. São dois lugares separados, cada
+// um com os seus próprios botões, porque misturar tudo numa tela só
+// estava virando uma lista sem fim.
 
-    // a escolha só aparece quando existe baralho: sem carta, não há
-    // o que escolher, e a linha a mais só atrapalharia
-    if (temCartas()) {
-        corpo += '<h3>O que estudar</h3>'
-            + '<div class="modos">' + botoesDeConteudo() + '</div>';
+let telaDeAprender = "modulos";
+
+const MODOS_DE_CARTA = [
+    { id: "cartas", nome: "Cartas", oque: "vira e diz se lembrou", minimo: 1 },
+    { id: "quiz", nome: "Quiz", oque: "escolhe entre quatro", minimo: 4 },
+    { id: "escrever", nome: "Escrever", oque: "digita em kana", minimo: 1 }
+];
+
+// quanto cada modo vale na memória. O peso é o expoente do ganho:
+// escrever a frase inteira prova mais do que reconhecer entre quatro.
+const PESO_QUIZ = 0.7;
+const PESO_ESCRITA = 1.2;
+
+const OPCOES_NO_QUIZ = 4;
+
+function modoDeCarta() {
+    const escolhido = sessao === null ? preferencia.modoDeCarta : sessao.modoDeCarta;
+    const modo = MODOS_DE_CARTA.find((m) => m.id === escolhido);
+
+    // um modo que precisa de mais cartas do que existem cai na carta
+    // simples, que funciona com uma só
+    if (modo === undefined || cartas.length < modo.minimo) {
+        return "cartas";
     }
 
-    corpo += '<h3>Como você quer estudar</h3>'
+    return modo.id;
+}
+
+// ---- o que cada módulo tem para mostrar na placa ----
+
+function resumoDosSilabarios() {
+    const agora = Date.now();
+    let vistos = 0;
+    let caiu = 0;
+
+    for (const caractere of CARACTERES) {
+        if (!foiApresentado(caractere)) {
+            continue;
+        }
+
+        vistos = vistos + 1;
+
+        for (const direcao of direcoesLiberadas(caractere)) {
+            const momento = quandoCai(memoriaDe(caractere.id, direcao));
+
+            if (momento !== null && momento <= agora) {
+                caiu = caiu + 1;
+                break;
+            }
+        }
+    }
+
+    return { total: CARACTERES.length, vistos: vistos, caiu: caiu };
+}
+
+function estadoCurto(quantos, oque) {
+    if (quantos === 0) {
+        return "em dia";
+    }
+
+    return quantos + " " + oque;
+}
+
+function placaDoModulo(id, jp, nome, parte, linha, estado) {
+    return '<button class="placa" data-modulo="' + id + '">'
+        + '<span class="placa-jp">' + jp + '</span>'
+        + '<strong class="placa-nome">' + nome + '</strong>'
+        + '<span class="placa-trilho"><span class="placa-cheio"'
+        + ' style="width:' + Math.round(parte * 100) + '%"></span></span>'
+        + '<span class="placa-linha">' + linha + '</span>'
+        + '<span class="placa-estado">' + estado + '</span>'
+        + '<span class="placa-seta" aria-hidden="true">›</span>'
+        + '</button>';
+}
+
+function telaDosModulos() {
+    const kana = resumoDosSilabarios();
+    const vencidas = cartasVencidas();
+    const pedindo = kana.caiu + vencidas;
+
+    let corpo = '<div class="capa">'
+        + '<span class="capa-jp">ひらがな・カタカナ</span>'
+        + '<strong class="capa-titulo">O que você vai estudar?</strong>'
+        + '<span class="capa-estado">'
+        + (pedindo === 0
+            ? "Nada pedindo revisão agora — bom momento para avançar."
+            : pedindo + (pedindo === 1 ? " coisa pedindo" : " coisas pedindo") + " revisão hoje")
+        + '</span></div>';
+
+    corpo += placaDoModulo("silabarios", "ひらがな・カタカナ", "Silabários",
+        kana.total === 0 ? 0 : kana.vistos / kana.total,
+        kana.vistos + " de " + kana.total + " letras começadas",
+        estadoCurto(kana.caiu, "para rever"));
+
+    corpo += placaDoModulo("cartas", "カード", "Cartas",
+        cartas.length === 0 ? 0 : mediaDoBaralho(),
+        cartas.length === 0
+            ? "nenhuma carta ainda"
+            : cartas.length + (cartas.length === 1 ? " carta" : " cartas"),
+        cartas.length === 0 ? "colar as suas" : estadoCurto(vencidas, "para rever"));
+
+    // os dois juntos continuam possíveis, só saíram da frente
+    if (temCartas()) {
+        corpo += '<button class="acao misturar" id="misturar">Misturar os dois'
+            + ' numa sessão só</button>';
+    }
+
+    return corpo;
+}
+
+// ---- os ajustes do silabário ----
+
+function volta(titulo) {
+    return '<div class="volta">'
+        + '<button class="volta-seta" id="voltar-modulos" aria-label="Voltar">‹</button>'
+        + '<h3 class="volta-titulo">' + titulo + '</h3>'
+        + '</div>';
+}
+
+function pilulasDe(lista, atual, campo) {
+    let corpo = '<div class="modos">';
+
+    for (const item of lista) {
+        corpo += '<button class="pilula' + (item.valor === atual ? " agora" : "") + '"'
+            + ' data-' + campo + '="' + item.valor + '">' + item.rotulo + '</button>';
+    }
+
+    return corpo + '</div>';
+}
+
+function telaDosSilabarios() {
+    const quais = [{ valor: "", rotulo: "Os dois" }];
+
+    for (const silabario of SILABARIOS) {
+        quais.push({ valor: silabario.id, rotulo: silabario.nome });
+    }
+
+    const partes = [{ valor: "", rotulo: "Tudo" }];
+
+    for (const grupo of GRUPOS) {
+        partes.push({ valor: "grupo:" + grupo.id, rotulo: grupo.nome });
+    }
+
+    const fazer = [{ valor: "", rotulo: "Tudo" }];
+
+    for (const direcao of DIRECOES) {
+        fazer.push({ valor: direcao, rotulo: HABILIDADES[direcao].nome });
+    }
+
+    // a linha solta não cabe em pílula: são trinta e tantas
+    let linhas = '<option value="">a parte inteira</option>';
+
+    for (const grupo of GRUPOS) {
+        linhas += '<optgroup label="' + grupo.nome + '">';
+
+        for (const linha of grupo.linhas) {
+            linhas += opcao("linha:" + linha.id, rotuloDaLinha(linha), foco.conjunto);
+        }
+
+        linhas += '</optgroup>';
+    }
+
+    const lista = caracteresNoFoco();
+    const vistos = lista.filter(foiApresentado).length;
+
+    return volta("Silabários")
+        + '<div class="escolha">'
+        + '<h3>Qual silabário</h3>' + pilulasDe(quais, foco.silabario, "silabario")
+        + '<h3>Qual parte</h3>' + pilulasDe(partes,
+            foco.conjunto.startsWith("grupo:") ? foco.conjunto : "", "parte")
+        + '<label class="afinar">Ou só uma linha'
+        + '<select id="foco-linha">' + linhas + '</select></label>'
+        + '<h3>O que fazer</h3>' + pilulasDe(fazer, foco.direcao, "habilidade")
+        + '<hr class="risco">'
+        + '<h3>Como</h3>'
         + '<div class="modos">'
         + '<button class="pilula modo' + (preferencia.modo === "perguntas" ? " agora" : "")
         + '" data-modo="perguntas">Por perguntas</button>'
         + '<button class="pilula modo' + (preferencia.modo === "tempo" ? " agora" : "")
         + '" data-modo="tempo">Por tempo</button>'
         + '</div>'
+        + '<h3>Quanto</h3>'
         + '<div class="tamanhos">' + botoesDeTamanho() + '</div>'
+        + '<p class="nota">' + vistos + ' de ' + lista.length
+        + ' começadas neste recorte.</p>'
         + '<button class="acao principal comecar" id="comecar">Começar</button>'
-        + '<p class="nota">A sessão termina sozinha quando chega no fim. Você pode'
-        + ' encerrar antes a qualquer momento — o que foi estudado fica guardado.</p>'
         + '</div>';
+}
 
-    areaInicio.innerHTML = corpo;
+// ---- os ajustes das cartas ----
+
+function telaDasCartas() {
+    if (!temCartas()) {
+        return volta("Cartas")
+            + '<div class="escolha">'
+            + '<p class="nota">O baralho é seu: o app não vem com carta nenhuma.'
+            + ' Vá em Praticar, em Minhas cartas, e cole as suas — uma por linha,'
+            + ' no formato <code>japonês = português</code>.</p>'
+            + '<button class="acao principal" id="ir-para-cartas">Ir colar cartas</button>'
+            + '</div>';
+    }
+
+    const agora = modoDeCarta();
+    let modos = '<div class="modos-carta">';
+
+    for (const modo of MODOS_DE_CARTA) {
+        const pouco = cartas.length < modo.minimo;
+
+        modos += '<button class="modo-carta' + (modo.id === agora ? " agora" : "")
+            + (pouco ? " pouco" : "") + '" data-modo-carta="' + modo.id + '"'
+            + (pouco ? " disabled" : "") + '>'
+            + '<strong>' + modo.nome + '</strong>'
+            + '<span>' + (pouco ? "precisa de " + modo.minimo + " cartas" : modo.oque) + '</span>'
+            + '</button>';
+    }
+
+    return volta("Cartas")
+        + modos + '</div>'
+        + '<div class="escolha">'
+        + '<h3>Quanto</h3>'
+        + '<div class="tamanhos">' + botoesDeTamanho() + '</div>'
+        + '<p class="nota">' + cartas.length
+        + (cartas.length === 1 ? " carta no baralho · " : " cartas no baralho · ")
+        + cartasVencidas() + ' pedindo revisão agora.</p>'
+        + '<button class="acao principal comecar" id="comecar">Começar</button>'
+        + '</div>';
+}
+
+function irParaModulo(qual) {
+    telaDeAprender = qual;
+
+    if (qual === "silabarios") {
+        preferencia.conteudo = "kana";
+    } else if (qual === "cartas") {
+        preferencia.conteudo = "cartas";
+    }
+
+    salvarPreferencia();
+    mostrarInicio();
+}
+
+function mostrarInicio() {
+    if (telaDeAprender === "silabarios") {
+        areaInicio.innerHTML = telaDosSilabarios();
+    } else if (telaDeAprender === "cartas") {
+        areaInicio.innerHTML = telaDasCartas();
+    } else {
+        areaInicio.innerHTML = telaDosModulos();
+    }
 }
 
 function maisErradoDaSessao() {
@@ -4327,8 +4653,16 @@ const areaCartaDica = document.getElementById("carta-dica");
 const areaCartaLeitura = document.getElementById("carta-leitura");
 const areaCartaAcoes = document.getElementById("carta-acoes");
 const areaCartas = document.getElementById("cartas-conteudo");
+const areaQuiz = document.getElementById("quiz");
+const areaQuizPergunta = document.getElementById("quiz-pergunta");
+const areaQuizRotulo = document.getElementById("quiz-rotulo");
+const areaQuizOpcoes = document.getElementById("quiz-opcoes");
+const areaEscrita = document.getElementById("escrita");
+const areaEscritaPergunta = document.getElementById("escrita-pergunta");
+const areaEscritaCampo = document.getElementById("escrita-campo");
+const areaEscritaEco = document.getElementById("escrita-eco");
+const areaEscritaRecado = document.getElementById("escrita-recado");
 const areaFocoAtivo = document.getElementById("foco-ativo");
-const areaFocoControles = document.getElementById("foco-controles");
 const areaTextos = document.getElementById("textos-conteudo");
 const areaAbas = document.getElementById("abas");
 const areaDados = document.getElementById("dados");
@@ -4374,32 +4708,6 @@ document.getElementById("naosei").addEventListener("click", desistirDoDesenho);
 
 document.getElementById("desisto").addEventListener("click", desistirDaFita);
 
-areaFocoControles.addEventListener("change", (evento) => {
-    if (evento.target.id === "foco-silabario") {
-        foco.silabario = evento.target.value;
-        montarControlesDoFoco();
-
-        if (emSessao()) {
-            proximo();
-        }
-
-        return;
-    }
-
-    if (evento.target.id === "foco-conjunto") {
-        foco.conjunto = evento.target.value;
-    } else if (evento.target.id === "foco-habilidade") {
-        foco.direcao = evento.target.value;
-    } else {
-        return;
-    }
-
-    mostrarBarraDoFoco();
-
-    if (emSessao()) {
-        proximo();
-    }
-});
 
 areaTextos.addEventListener("click", (evento) => {
     const botao = evento.target.closest("button");
@@ -4433,7 +4741,8 @@ areaTextos.addEventListener("click", (evento) => {
     if (botao.dataset.remover !== undefined) {
         if (confirm("Remover este texto?")) {
             removerTexto(botao.dataset.remover);
-            montarControlesDoFoco();
+            mostrarInicio();
+    mostrarBarraDoFoco();
             mostrarTextos();
 
             if (emSessao()) {
@@ -4577,6 +4886,17 @@ function fecharCapa() {
 // a capa inteira é o botão: ninguém precisa mirar
 areaCapa.addEventListener("click", fecharCapa);
 
+areaInicio.addEventListener("change", (evento) => {
+    if (evento.target.id === "foco-linha") {
+        // escolher uma linha solta substitui a parte inteira
+        foco.conjunto = evento.target.value === ""
+            ? (foco.conjunto.startsWith("linha:") ? "" : foco.conjunto)
+            : evento.target.value;
+        mostrarInicio();
+        mostrarBarraDoFoco();
+    }
+});
+
 areaInicio.addEventListener("click", (evento) => {
     const botao = evento.target.closest("button");
 
@@ -4584,8 +4904,54 @@ areaInicio.addEventListener("click", (evento) => {
         return;
     }
 
-    if (botao.dataset.conteudo !== undefined) {
-        preferencia.conteudo = botao.dataset.conteudo;
+    if (botao.dataset.modulo !== undefined) {
+        irParaModulo(botao.dataset.modulo);
+        return;
+    }
+
+    if (botao.id === "voltar-modulos") {
+        telaDeAprender = "modulos";
+        mostrarInicio();
+        return;
+    }
+
+    if (botao.id === "misturar") {
+        preferencia.conteudo = "tudo";
+        salvarPreferencia();
+        comecarSessao();
+        return;
+    }
+
+    if (botao.id === "ir-para-cartas") {
+        mostrarTela("praticar");
+        painelDoBaralho = "colar";
+        mostrarCartas();
+        return;
+    }
+
+    if (botao.dataset.silabario !== undefined) {
+        foco.silabario = botao.dataset.silabario;
+        mostrarInicio();
+        mostrarBarraDoFoco();
+        return;
+    }
+
+    if (botao.dataset.parte !== undefined) {
+        foco.conjunto = botao.dataset.parte;
+        mostrarInicio();
+        mostrarBarraDoFoco();
+        return;
+    }
+
+    if (botao.dataset.habilidade !== undefined) {
+        foco.direcao = botao.dataset.habilidade;
+        mostrarInicio();
+        mostrarBarraDoFoco();
+        return;
+    }
+
+    if (botao.dataset.modoCarta !== undefined) {
+        preferencia.modoDeCarta = botao.dataset.modoCarta;
         salvarPreferencia();
         mostrarInicio();
         return;
@@ -4617,6 +4983,34 @@ areaInicio.addEventListener("click", (evento) => {
     }
 });
 
+
+
+areaQuiz.addEventListener("click", (evento) => {
+    const botao = evento.target.closest("[data-opcao]");
+
+    if (botao !== null) {
+        responderQuiz(Number(botao.dataset.opcao));
+    }
+});
+
+areaEscrita.addEventListener("input", (evento) => {
+    if (evento.target.id === "escrita-campo") {
+        ecoDaEscrita();
+    }
+});
+
+areaEscrita.addEventListener("keydown", (evento) => {
+    if (evento.target.id === "escrita-campo" && evento.key === "Enter") {
+        evento.preventDefault();
+        responderEscrita();
+    }
+});
+
+areaEscrita.addEventListener("click", (evento) => {
+    if (evento.target.closest("#escrita-conferir") !== null) {
+        responderEscrita();
+    }
+});
 
 areaCarta.addEventListener("click", (evento) => {
     const botao = evento.target.closest("button");
@@ -4781,41 +5175,6 @@ function opcao(valor, texto, escolhido) {
         + texto + '</option>';
 }
 
-function montarControlesDoFoco() {
-    let silabarios = opcao("", "Todos", foco.silabario);
-
-    for (const silabario of SILABARIOS) {
-        silabarios += opcao(silabario.id, silabario.nome, foco.silabario);
-    }
-
-    let conjuntos = opcao("", "Tudo", foco.conjunto);
-
-    for (const grupo of GRUPOS) {
-        conjuntos += '<optgroup label="' + grupo.nome + '">'
-            + opcao("grupo:" + grupo.id, "Todo o " + grupo.nome.toLowerCase(), foco.conjunto);
-
-        for (const linha of grupo.linhas) {
-            conjuntos += opcao("linha:" + linha.id, rotuloDaLinha(linha), foco.conjunto);
-        }
-
-        conjuntos += '</optgroup>';
-    }
-
-    let habilidades = opcao("", "Todas", foco.direcao);
-
-    for (const direcao of DIRECOES) {
-        habilidades += opcao(direcao, HABILIDADES[direcao].nome, foco.direcao);
-    }
-
-    areaFocoControles.innerHTML = '<div class="foco-linha">'
-        + '<label>Silabário<select id="foco-silabario">' + silabarios + '</select></label>'
-        + '<label>Conjunto<select id="foco-conjunto">' + conjuntos + '</select></label>'
-        + '<label>Habilidade<select id="foco-habilidade">' + habilidades + '</select></label>'
-        + '</div>'
-        + '<p class="nota">O app continua escolhendo o que praticar — só que dentro do recorte.</p>';
-
-    mostrarBarraDoFoco();
-}
 
 function mostrarBarraDoFoco() {
     if (!focoAtivo()) {
@@ -4995,6 +5354,8 @@ function mostrarExercicio() {
     const ehApresentacao = exercicio.tipo === "apresentacao";
     const ehVazio = exercicio.tipo === "vazio";
     const ehCarta = exercicio.tipo === "carta";
+    const ehQuiz = exercicio.tipo === "carta-quiz";
+    const ehEscrita = exercicio.tipo === "carta-escrever";
     const naFita = TIPOS_DE_FITA.includes(exercicio.tipo);
     const digitando = exercicio.tipo === "digitar" || ehPalavra
         || TIPOS_QUE_SE_DIGITAM.includes(exercicio.tipo);
@@ -5005,14 +5366,16 @@ function mostrarExercicio() {
     areaPergunta.innerHTML = "";
     respondido = false;
 
-    // a carta ocupa o palco sozinha, igual à apresentação de um kana novo
-    const cartao = ehApresentacao || ehVazio || ehCarta;
+    // estas ocupam o palco sozinhas, igual à apresentação de um kana novo
+    const cartao = ehApresentacao || ehVazio || ehCarta || ehQuiz || ehEscrita;
 
     // na fita quem mostra o conteudo e a propria fita: o cabecalho so ocuparia espaco
     const semCabecalho = cartao || ((ehSequencia || ehTrecho || ehLacuna) && !ouvindo);
 
-    areaApresentacao.hidden = !cartao || ehCarta;
+    areaApresentacao.hidden = !cartao || ehCarta || ehQuiz || ehEscrita;
     areaCarta.hidden = !ehCarta;
+    areaQuiz.hidden = !ehQuiz;
+    areaEscrita.hidden = !ehEscrita;
     areaMotivo.hidden = cartao;
     areaPergunta.hidden = semCabecalho;
     areaSignificado.hidden = semCabecalho;
@@ -5027,6 +5390,16 @@ function mostrarExercicio() {
 
     if (ehCarta) {
         mostrarCarta();
+        return;
+    }
+
+    if (ehQuiz) {
+        mostrarQuiz();
+        return;
+    }
+
+    if (ehEscrita) {
+        mostrarEscrita();
         return;
     }
 
@@ -5250,6 +5623,168 @@ function leituraEmHtml(texto) {
     return corpo;
 }
 
+
+// ---- o quiz ----
+
+function mostrarQuiz() {
+    areaQuizRotulo.textContent = exercicio.perguntaEmJapones
+        ? "O que isto quer dizer"
+        : "Qual é a frase em japonês";
+    areaQuizPergunta.textContent = exercicio.pergunta;
+    areaQuizPergunta.classList.toggle("japones", exercicio.perguntaEmJapones);
+    areaQuizPergunta.classList.toggle("longa",
+        exercicio.perguntaEmJapones && exercicio.pergunta.length > FRENTE_LONGA);
+
+    let corpo = "";
+
+    exercicio.opcoes.forEach(function (opcao, i) {
+        corpo += '<button class="quiz-opcao' + (exercicio.perguntaEmJapones ? "" : " japones")
+            + '" data-opcao="' + i + '">'
+            + '<span class="quiz-letra">' + "ABCD"[i] + '</span>'
+            + '<span class="quiz-texto">' + escapar(opcao.texto) + '</span>'
+            + '</button>';
+    });
+
+    areaQuizOpcoes.innerHTML = corpo;
+}
+
+function responderQuiz(indice) {
+    if (exercicio === null || exercicio.tipo !== "carta-quiz" || respondido) {
+        return;
+    }
+
+    const escolhida = exercicio.opcoes[indice];
+
+    if (escolhida === undefined) {
+        return;
+    }
+
+    respondido = true;
+
+    // a certa acende sempre; a errada que ele tocou acende em rosa
+    const botoes = areaQuizOpcoes.querySelectorAll(".quiz-opcao");
+
+    exercicio.opcoes.forEach(function (opcao, i) {
+        if (opcao.certa) {
+            botoes[i].classList.add("certa");
+        } else if (i === indice) {
+            botoes[i].classList.add("errada");
+        }
+    });
+
+    fecharCarta(escolhida.certa);
+}
+
+// ---- escrever a frase ----
+
+// Para comparar, o que vale é o som, não o desenho. Assim dá para
+// escrever em romaji sem pensar se a frase do curso usa hiragana ou
+// katakana: すうぱあ e スーパー dão o mesmo "suupaa". Espaço e
+// pontuação do material também não reprovam ninguém.
+const FORA_DA_COMPARACAO = /[\s　。、！？!?,.・（）()「」『』\-ー~～]/g;
+
+// no celular o foco automático sobe o teclado por cima da tela
+function ehToque() {
+    return window.matchMedia("(pointer: coarse)").matches;
+}
+
+function soOSom(texto) {
+    return kanaParaRomaji(texto).replace(FORA_DA_COMPARACAO, "").toLowerCase();
+}
+
+// Uma frase só serve para digitar se o som dela couber em romaji.
+// Sobrou kanji, dígito de largura inteira ou um kana que a tabela não
+// conhece? Então não dá para escrever essa frase sem chute, e ela sai
+// do modo — vira carta simples.
+function daParaEscrever(carta) {
+    return /^[a-z]+$/.test(soOSom(carta.frente));
+}
+
+function mostrarEscrita() {
+    areaEscritaPergunta.textContent = exercicio.carta.verso;
+    areaEscritaCampo.value = "";
+    areaEscritaEco.textContent = "";
+    areaEscritaRecado.innerHTML = "";
+    areaEscritaRecado.hidden = true;
+    areaEscrita.classList.remove("respondida");
+
+    if (!ehToque()) {
+        areaEscritaCampo.focus();
+    }
+}
+
+function ecoDaEscrita() {
+    areaEscritaEco.textContent = romajiParaKana(areaEscritaCampo.value);
+}
+
+function responderEscrita() {
+    if (exercicio === null || exercicio.tipo !== "carta-escrever" || respondido) {
+        return;
+    }
+
+    const escrito = romajiParaKana(areaEscritaCampo.value);
+
+    if (soOSom(escrito) === "") {
+        return;
+    }
+
+    respondido = true;
+
+    const acertou = soOSom(escrito) === soOSom(exercicio.carta.frente);
+
+    areaEscrita.classList.add("respondida");
+    areaEscritaRecado.hidden = false;
+    areaEscritaRecado.innerHTML = acertou
+        ? '<span class="etiqueta lima">Isso</span>'
+            + '<div class="carta-leitura">' + leituraEmHtml(exercicio.carta.frente) + '</div>'
+        : '<span class="etiqueta rosa">A frase era</span>'
+            + '<div class="carta-leitura">' + leituraEmHtml(exercicio.carta.frente) + '</div>'
+            + '<p class="escrita-seu">você escreveu <b class="kana-frase">'
+            + escapar(escrito) + '</b></p>';
+
+    fecharCarta(acertou);
+}
+
+// ---- o que as três formas têm em comum ----
+//
+// Anotar na memória, contar na sessão, acender o palco e chamar a
+// próxima. Era só da carta simples; agora o quiz e a escrita usam o
+// mesmo caminho, para o placar e o histórico não divergirem.
+
+function fecharCarta(acertou) {
+    const id = exercicio.correto.id;
+
+    anotar(id, "ler", acertou, exercicio.peso);
+    lembrarDoRecente(id);
+    lembrarDoResultado(acertou);
+    anotarNoHistorico(acertou, formatoDe(exercicio));
+
+    total = total + 1;
+
+    if (acertou) {
+        acertos = acertos + 1;
+    }
+
+    if (sessao !== null) {
+        sessao.feitas = sessao.feitas + 1;
+
+        if (acertou) {
+            sessao.acertos = sessao.acertos + 1;
+        } else {
+            sessao.piores[id] = (sessao.piores[id] || 0) + 1;
+        }
+    }
+
+    areaPlacar.textContent = acertos + " de " + total;
+    mostrarBarraDaSessao();
+    marcarPalco(acertou ? "acertou" : "errou");
+    mostrarPainel();
+
+    // quando escapou, fica um instante a mais na tela: é o momento em
+    // que a resposta gruda
+    temporizador = setTimeout(proximo, acertou ? PAUSA_ACERTO : PAUSA_ACERTO_COM_SOM);
+}
+
 function cartaVirada() {
     return exercicio !== null && exercicio.tipo === "carta" && !areaCartaVerso.hidden;
 }
@@ -5282,38 +5817,7 @@ function responderCarta(lembrou) {
     }
 
     respondido = true;
-
-    const id = exercicio.correto.id;
-
-    anotar(id, "ler", lembrou, PESO_CARTA);
-    lembrarDoRecente(id);
-    lembrarDoResultado(lembrou);
-    anotarNoHistorico(lembrou, formatoDe(exercicio));
-
-    total = total + 1;
-
-    if (lembrou) {
-        acertos = acertos + 1;
-    }
-
-    if (sessao !== null) {
-        sessao.feitas = sessao.feitas + 1;
-
-        if (lembrou) {
-            sessao.acertos = sessao.acertos + 1;
-        } else {
-            sessao.piores[id] = (sessao.piores[id] || 0) + 1;
-        }
-    }
-
-    areaPlacar.textContent = acertos + " de " + total;
-    mostrarBarraDaSessao();
-    marcarPalco(lembrou ? "acertou" : "errou");
-    mostrarPainel();
-
-    // quando escapou, a carta fica um instante a mais na tela: é o
-    // momento em que a resposta gruda
-    temporizador = setTimeout(proximo, lembrou ? PAUSA_ACERTO : PAUSA_ACERTO_COM_SOM);
+    fecharCarta(lembrou);
 }
 
 // ---- o baralho na tela Praticar ----
@@ -6711,6 +7215,22 @@ document.addEventListener("keydown", (evento) => {
         return;
     }
 
+    // no quiz: 1 a 4 escolhem a opção
+    if (exercicio.tipo === "carta-quiz") {
+        const n = Number(evento.key);
+
+        if (n >= 1 && n <= OPCOES_NO_QUIZ) {
+            responderQuiz(n - 1);
+        }
+
+        return;
+    }
+
+    // a escrita tem campo próprio: o Enter dela é tratado lá
+    if (exercicio.tipo === "carta-escrever") {
+        return;
+    }
+
     // na carta: espaço vira, 1 escapou, 2 lembrei
     if (exercicio.tipo === "carta") {
         if (evento.key === " " || evento.key === "Enter") {
@@ -6773,7 +7293,7 @@ carregar();
 carregarPreferencia();
 // a procura é assíncrona: quando ela termina, a tela da voz muda de recado
 prepararGravacoes().then(mostrarVoz);
-montarControlesDoFoco();
+mostrarBarraDoFoco();
 mostrarVoz();
 mostrarTextos();
 mostrarCartas();

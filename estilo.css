@@ -4936,3 +4936,438 @@ body:has(#carta:not([hidden]):not(.virada)) .gato .cara-neutro {
 .esvaziar {
     width: 100%;
 }
+
+/* ===== AS DUAS PLACAS ===== */
+
+.placa {
+    position: relative;
+    display: block;
+    width: 100%;
+    margin-bottom: 14px;
+    padding: 24px 56px 22px 22px;
+    border: 0;
+    border-radius: var(--raio-g);
+    background: var(--papel-2);
+    text-align: left;
+    cursor: pointer;
+}
+
+.placa-jp {
+    display: block;
+    font-family: var(--kana);
+    font-size: 0.86rem;
+    letter-spacing: 0.08em;
+    color: var(--cinza);
+}
+
+.placa-nome {
+    display: block;
+    margin-top: 4px;
+    font-family: var(--display);
+    font-size: 1.6rem;
+    letter-spacing: -0.02em;
+    color: var(--tinta);
+}
+
+.placa-trilho {
+    display: block;
+    height: 8px;
+    margin: 18px 0 12px;
+    border-radius: 4px;
+    background: var(--papel-3);
+    overflow: hidden;
+}
+
+.placa-cheio {
+    display: block;
+    height: 100%;
+    border-radius: 4px;
+    background: var(--lima);
+}
+
+.placa-linha {
+    display: block;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--cinza);
+}
+
+.placa-estado {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 6px 14px;
+    border-radius: var(--raio-pil);
+    background: var(--lima);
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 0.64rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--papel);
+}
+
+.placa-seta {
+    position: absolute;
+    top: 50%;
+    right: 22px;
+    transform: translateY(-50%);
+    font-family: var(--texto);
+    font-size: 1.8rem;
+    line-height: 1;
+    color: var(--lima);
+}
+
+.acao.misturar {
+    width: 100%;
+    margin-top: 4px;
+}
+
+/* ===== A VOLTA ===== */
+
+.volta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.volta-seta {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--raio-pil);
+    background: none;
+    font-family: var(--texto);
+    font-size: 1.7rem;
+    line-height: 1;
+    color: var(--tinta);
+    cursor: pointer;
+}
+
+.volta-titulo {
+    margin: 0;
+    font-family: var(--display);
+    font-size: 1.25rem;
+    letter-spacing: -0.01em;
+    color: var(--tinta);
+}
+
+.afinar {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 4px 0 8px;
+    font-family: var(--mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--cinza);
+}
+
+.risco {
+    height: 0;
+    margin: 20px 0;
+    border: 0;
+    border-top: 1px solid var(--linha);
+}
+
+/* ===== OS MODOS DE CARTA ===== */
+
+.modos-carta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.modo-carta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px;
+    border: var(--borda) solid var(--linha);
+    border-radius: var(--raio);
+    background: none;
+    text-align: left;
+    cursor: pointer;
+}
+
+.modo-carta strong {
+    font-family: var(--display);
+    font-size: 0.95rem;
+    color: var(--tinta);
+}
+
+.modo-carta span {
+    font-family: var(--texto);
+    font-size: 0.76rem;
+    line-height: 1.35;
+    color: var(--cinza);
+}
+
+.modo-carta.agora {
+    border-color: var(--lima);
+    background: var(--lima);
+}
+
+.modo-carta.agora strong,
+.modo-carta.agora span {
+    color: var(--papel);
+}
+
+.modo-carta.pouco {
+    opacity: 0.45;
+    cursor: default;
+}
+
+/* ===== O QUIZ ===== */
+
+#quiz {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.quiz-cabeca {
+    padding: 26px 22px;
+    border-radius: var(--raio-g);
+    background: var(--azul);
+}
+
+.quiz-rotulo {
+    display: block;
+    margin-bottom: 10px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 0.64rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--azul-claro, rgba(255, 255, 255, 0.72));
+}
+
+.quiz-pergunta {
+    display: block;
+    font-family: var(--texto);
+    font-weight: 700;
+    font-size: clamp(1.05rem, 4.2vw, 1.35rem);
+    line-height: 1.35;
+    color: #F2EFE6;
+}
+
+.quiz-pergunta.japones {
+    font-family: var(--kana);
+    font-size: clamp(1.2rem, 5vw, 1.6rem);
+    line-height: 1.5;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+}
+
+.quiz-pergunta.japones.longa {
+    font-size: clamp(1rem, 4vw, 1.3rem);
+}
+
+.quiz-opcoes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.quiz-opcao {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 16px 18px;
+    border: var(--borda) solid var(--linha);
+    border-radius: var(--raio);
+    background: none;
+    text-align: left;
+    cursor: pointer;
+}
+
+.quiz-letra {
+    flex: none;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    color: var(--cinza);
+}
+
+.quiz-texto {
+    font-family: var(--texto);
+    font-weight: 600;
+    font-size: 0.92rem;
+    line-height: 1.3;
+    color: var(--tinta);
+}
+
+.quiz-opcao.japones .quiz-texto {
+    font-family: var(--kana);
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.5;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+}
+
+.quiz-opcao.certa {
+    border-color: var(--lima);
+    background: color-mix(in srgb, var(--lima) 14%, transparent);
+}
+
+.quiz-opcao.certa .quiz-letra {
+    color: var(--lima);
+}
+
+.quiz-opcao.errada {
+    border-color: var(--rosa);
+    background: color-mix(in srgb, var(--rosa) 12%, transparent);
+}
+
+.quiz-opcao.errada .quiz-letra {
+    color: var(--rosa);
+}
+
+/* ===== ESCREVER A FRASE ===== */
+
+#escrita {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.escrita-cabeca {
+    padding: 26px 22px;
+    border-radius: var(--raio-g);
+    background: var(--azul);
+}
+
+.escrita-rotulo {
+    display: block;
+    margin-bottom: 10px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 0.64rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--azul-claro, rgba(255, 255, 255, 0.72));
+}
+
+.escrita-pergunta {
+    display: block;
+    font-family: var(--texto);
+    font-weight: 700;
+    font-size: clamp(1.05rem, 4.2vw, 1.35rem);
+    line-height: 1.35;
+    color: #F2EFE6;
+}
+
+.escrita-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 18px;
+    border: var(--borda) solid var(--linha);
+    border-radius: var(--raio);
+    background: var(--papel-2);
+}
+
+.escrita-campo input {
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    font-family: var(--mono);
+    font-size: 1rem;
+    color: var(--tinta);
+}
+
+/* o que você digitou, já virado em kana, enquanto escreve */
+.escrita-eco {
+    min-height: 2rem;
+    font-family: var(--kana);
+    font-weight: 700;
+    font-size: 1.4rem;
+    line-height: 1.4;
+    color: var(--lima);
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+}
+
+.escrita-recado {
+    padding: 16px 18px;
+    border-radius: var(--raio);
+    background: var(--papel-2);
+}
+
+.escrita-seu {
+    margin: 10px 0 0;
+    font-family: var(--texto);
+    font-size: 0.82rem;
+    color: var(--cinza);
+}
+
+.escrita-seu b {
+    color: var(--rosa);
+}
+
+.etiqueta.lima {
+    color: var(--papel);
+    background: var(--lima);
+    border-color: transparent;
+}
+
+.etiqueta.rosa {
+    color: var(--papel);
+    background: var(--rosa);
+    border-color: transparent;
+}
+
+#escrita.respondida .escrita-campo {
+    opacity: 0.5;
+}
+
+#escrita.respondida #escrita-conferir {
+    display: none;
+}
+
+/* O nome do app quebrava em duas linhas quando o placar entrava no
+   topo: no celular ele é uma linha só, e o placar que se acomoda. */
+#masthead h1 {
+    white-space: nowrap;
+}
+
+.marca {
+    min-width: 0;
+}
+
+.topo-direita {
+    flex-shrink: 0;
+}
+
+@media (min-width: 1100px) {
+    /* no trilho lateral ele quebra de propósito, em duas linhas */
+    #masthead h1 {
+        white-space: normal;
+    }
+}
+
+/* o <select> da linha solta vinha com a cara do sistema */
+.afinar select {
+    width: 100%;
+    padding: 11px 14px;
+    border: var(--borda) solid var(--linha);
+    border-radius: var(--raio);
+    background: var(--papel-2);
+    font-family: var(--texto);
+    font-size: 0.92rem;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--tinta);
+    appearance: none;
+    -webkit-appearance: none;
+}

@@ -5,6 +5,45 @@ foi descartado. O descarte também é direção.
 
 ---
 
+## 2026-11-22 · Estrutura · R4 — dois módulos e os modos de carta
+
+**Em jogo:** como separar o silabário das cartas, já que tudo cabia numa
+tela só de abertura e estava virando lista sem fim.
+
+**Opções:** A duas placas (uma tela para escolher, depois entra no módulo) ·
+B abas no topo (a chave fica à vista, tudo numa tela) · C trilhas (uma
+lista que cresce com os baralhos) · D a pilha de hoje (o app monta e você
+tira o que não quer — a diferentona).
+
+**Escolhido:** **A · Duas placas.** "eu gosto mais da opção A das duas
+placas".
+
+**Descartado:** B apertava quando os ajustes crescessem; C era a que mais
+escalava mas mudava demais a cara da abertura; D invertia o controle, que
+é justamente o que ele queria mais, não menos.
+
+**O que mudou junto:**
+- a tela Aprender tem três estados: módulos, Silabários e Cartas;
+- a escolha de recorte (silabário, parte, habilidade) saiu dos três
+  `<select>` de Praticar e virou botões na tela Silabários;
+- "Misturar os dois" continua existindo, como um botão abaixo das placas;
+- modos de carta: **Cartas**, **Quiz** (escolhe entre quatro, metade das
+  vezes de trás para frente) e **Escrever** (digita em romaji, o app
+  mostra virando em kana). Pesos 0.5, 0.7 e 1.2.
+
+**Sobre o texto colado:** fica onde está. Uma carta tem dois lados; o texto
+não tem verso, ele é material de leitura de onde saem kana e trechos.
+
+**Bug corrigido na mesma rodada:** com o foco em katakana o app só servia a
+letra ア. O limite de coisas novas no ar era contado no app inteiro e a
+letra nova era procurada só dentro do foco — quem estava no meio do
+hiragana nunca destravava um katakana novo. Agora o limite é contado
+dentro do foco.
+
+**Ainda por fazer:** o modo **Combinar** (ligar os pares contra o relógio).
+
+---
+
 ## 2026-11-04 · Frases · R3 — o verso e o baralho
 
 **Em jogo:** dois pontos que o Lucas apontou depois de rodar a carta rápida.

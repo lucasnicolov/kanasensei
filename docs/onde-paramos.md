@@ -1,6 +1,6 @@
 # Onde paramos
 
-Atualizado em 2026-11-04.
+Atualizado em 2026-11-22.
 
 ## Aprovado e no ar
 
@@ -9,6 +9,14 @@ capa, aprender, praticar, progresso, e os exercícios de escolher, digitar e
 desenhar. As gravações de voz estão desligadas, caindo na voz do sistema.
 
 ## Feito, esperando teste
+
+A **estrutura de dois módulos** (opção A, duas placas) e os modos **Quiz** e
+**Escrever** nas cartas. O painel de foco antigo saiu de Praticar: agora o
+recorte se escolhe em botões, na tela Silabários.
+
+Também corrigido: com o foco em katakana o app só servia a letra ア.
+
+## Feito antes, já no ar
 
 A **carta rápida**, em código, nos três arquivos do app:
 
@@ -24,8 +32,8 @@ Falta o Lucas testar em `localhost:8000` e no iPhone, e publicar.
 
 ## Aprovado e ainda por fazer
 
-Do módulo de frases, os dois exercícios de montar escolhidos na R1:
-**Bandeja** e **Ditado**. O desenho está no Figma, na seção
+O modo **Combinar** das cartas (ligar os pares contra o relógio), e os dois
+exercícios de montar escolhidos na R1: **Bandeja** e **Ditado**. O desenho está no Figma, na seção
 "Frases — R1 · o fluxo inteiro e as opções de montar".
 
 ## Pronto para usar
@@ -39,8 +47,9 @@ Do módulo de frases, os dois exercícios de montar escolhidos na R1:
 
 ## Próximos passos, em ordem
 
-1. Testar a carta rápida e publicar.
-2. A **Bandeja** em código, depois o **Ditado**.
+1. Testar os dois módulos e publicar.
+2. O modo **Combinar**.
+3. A **Bandeja** em código, depois o **Ditado**.
 3. Os pontos de melhoria que o Lucas ainda tem para passar, um por um — ele
    está mexendo nos textos.
 

@@ -136,6 +136,29 @@
 
                 <div id="apresentacao" hidden></div>
 
+                    <div id="quiz" hidden>
+                        <div class="quiz-cabeca">
+                            <span class="quiz-rotulo" id="quiz-rotulo"></span>
+                            <strong class="quiz-pergunta" id="quiz-pergunta"></strong>
+                        </div>
+                        <div class="quiz-opcoes" id="quiz-opcoes"></div>
+                    </div>
+
+                    <div id="escrita" hidden>
+                        <div class="escrita-cabeca">
+                            <span class="escrita-rotulo">Escreva em japonês</span>
+                            <strong class="escrita-pergunta" id="escrita-pergunta"></strong>
+                        </div>
+                        <label class="escrita-campo">
+                            <input id="escrita-campo" type="text" inputmode="latin"
+                                autocomplete="off" autocorrect="off" autocapitalize="off"
+                                spellcheck="false" placeholder="escreva em romaji">
+                            <span class="escrita-eco" id="escrita-eco"></span>
+                        </label>
+                        <div class="escrita-recado" id="escrita-recado" hidden></div>
+                        <button class="acao principal" id="escrita-conferir">Conferir</button>
+                    </div>
+
                     <div id="carta" hidden>
                         <div class="carta-corpo">
                             <button class="som carta-som" id="carta-som" type="button"
@@ -188,9 +211,6 @@
 
         <!-- ========== PRATICAR ========== -->
         <section id="tela-praticar" class="tela" hidden>
-            <h2 class="titulo-tela">Escolher o que praticar</h2>
-            <div id="foco-controles"></div>
-
             <h2 class="titulo-tela">A voz</h2>
             <div id="voz-controles"></div>
 
